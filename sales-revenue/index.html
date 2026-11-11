@@ -1117,7 +1117,7 @@ function renderTable() {
     if (!open) return;
 
     if (part) {
-      var ph = ['Part Number', 'Description', 'Product Family', '>Units', '>Invoices', '>Customers', '>Average Unit Price', '>Revenue'];
+      var ph = ['Part Number', 'Description', 'Product Family', '>Units', '>Invoices', '>Customers', '>Avg Unit Price', '>Revenue'];
       var lh = withCust([lInv, lDate], ['>Quantity', '>Unit Price', '>Discount', '>Sales Price', 'Currency']);
       h += '<tr class="sub"><td class="nest" colspan="6"><table class="dt">' + heads(ph) + '<tbody>';
       M.list.forEach(function (G) {
