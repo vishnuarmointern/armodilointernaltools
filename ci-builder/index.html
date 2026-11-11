@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Armodilo Commercial Invoice Builder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#f2f3f1; --surface:#ffffff; --ink:#1d2124; --muted:#5f6569; --steel:#a4abaf; --line:#d7dbdc;
+  --signal:#cf1f1f; --signal-ink:#ffffff; --ok:#2f6b4f; --warnbg:#fbeeee;
+  color-scheme: light;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#16191b; --surface:#202427; --ink:#e8ebec; --muted:#a3aaae; --steel:#5d6569; --line:#343a3e;
+    --signal:#ff5a52; --signal-ink:#1a0505; --ok:#7cc6a0; --warnbg:#3a2222; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#16191b; --surface:#202427; --ink:#e8ebec; --muted:#a3aaae; --steel:#5d6569; --line:#343a3e;
+  --signal:#ff5a52; --signal-ink:#1a0505; --ok:#7cc6a0; --warnbg:#3a2222; color-scheme: dark;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.5 "Archivo",Arial,Helvetica,sans-serif}
+.wrap{max-width:1120px;margin:0 auto;padding:28px 20px 60px}
+header{display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin-bottom:28px}
+header img{height:34px;width:auto;background:#fff;padding:6px 10px;border-radius:4px}
+header h1{font-size:1.5rem;font-weight:700;letter-spacing:-.01em;margin:0}
+header p{margin:2px 0 0;color:var(--muted);font-size:.95rem}
+.grid{display:grid;grid-template-columns:minmax(0,360px) minmax(0,1fr);gap:28px;align-items:start}
+@media (max-width:860px){.grid{grid-template-columns:1fr}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:20px}
+.step{display:flex;gap:12px;align-items:baseline;margin:0 0 10px;font-weight:600;font-size:1.02rem}
+.step span{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--ink);color:var(--surface);font-size:.8rem;flex:none}
+.drop{display:block;border:2px dashed var(--steel);border-radius:6px;padding:26px 16px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s}
+.drop:hover,.drop.over{border-color:var(--signal);background:color-mix(in srgb,var(--signal) 6%,transparent)}
+.drop:focus-within{outline:3px solid color-mix(in srgb,var(--signal) 45%,transparent);outline-offset:2px}
+.drop strong{display:block;font-size:1.05rem}
+.drop small{color:var(--muted)}
+.drop input{position:absolute;width:1px;height:1px;opacity:0}
+.file{margin-top:10px;font-size:.9rem;color:var(--muted);word-break:break-all}
+section+section{margin-top:22px}
+label{display:block;font-size:.88rem;font-weight:500;margin:12px 0 4px}
+input[type=text],input[type=email]{width:100%;padding:9px 11px;border:1px solid var(--steel);border-radius:4px;background:var(--surface);color:var(--ink);font:inherit}
+input:focus{outline:3px solid color-mix(in srgb,var(--signal) 40%,transparent);outline-offset:1px;border-color:var(--signal)}
+.hint{font-size:.82rem;color:var(--muted);margin-top:4px}
+button{font:inherit;font-weight:600;border:0;border-radius:4px;padding:12px 16px;width:100%;background:var(--signal);color:var(--signal-ink);cursor:pointer}
+button:disabled{background:var(--line);color:var(--muted);cursor:not-allowed}
+button:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+.status{font-size:.9rem;margin-top:10px;min-height:1.4em}
+.status.ok{color:var(--ok)} .status.err{color:var(--signal)}
+.warn{background:var(--warnbg);border-left:3px solid var(--signal);padding:10px 12px;border-radius:3px;font-size:.88rem;margin-top:14px}
+.warn ul{margin:4px 0 0;padding-left:18px}
+.metal-line{margin-top:14px}
+.metal-line select{width:100%;padding:9px 11px;border:1px solid var(--steel);border-radius:4px;background:var(--surface);color:var(--ink);font:inherit}
+.metal-line select:focus{outline:3px solid color-mix(in srgb,var(--signal) 40%,transparent);outline-offset:1px;border-color:var(--signal)}
+.metal-line.added{border:1px solid var(--line);border-radius:5px;padding:10px 12px 4px;background:color-mix(in srgb,var(--paper) 50%,var(--surface))}
+.line-head{display:flex;justify-content:space-between;align-items:baseline;font-weight:600;font-size:.9rem}
+.fields{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}
+.fld label{margin-top:8px}
+button.outline{margin-top:10px;background:var(--surface);color:var(--signal);border:2px solid var(--signal)}
+button.outline:disabled{border-color:var(--line);background:var(--surface)}
+button.secondary{margin-top:14px;background:transparent;color:var(--ink);border:1.5px dashed var(--steel);font-weight:600}
+button.secondary:hover{border-color:var(--signal);color:var(--signal)}
+button.linkbtn{width:auto;background:none;color:var(--signal);padding:2px 4px;font-size:.85rem;font-weight:600;text-decoration:underline}
+.imp{margin-top:14px;border:1px solid var(--line);border-radius:5px;padding:8px 12px}
+.imp summary{cursor:pointer;font-weight:600;font-size:.92rem}
+.imp[open]{padding-bottom:12px}
+.metal-title{font-size:.88rem;font-weight:600;margin:16px 0 0}
+.gdocs{font-size:.86rem;color:var(--muted);margin-top:14px;line-height:1.45}
+/* invoice preview: a sheet of paper, always light, Arial like the real document */
+.stage{overflow-x:auto}
+.sheet{background:#fff;color:#000;width:612px;min-height:792px;margin:0 auto;padding:16px 14.4px 20px;font:10px/13.5px Arial,Helvetica,sans-serif;box-shadow:0 1px 0 #c9cdcf,0 8px 24px -14px rgba(0,0,0,.35);position:relative}
+.sheet .r{position:relative;height:13.5px;white-space:nowrap}
+.sheet .r span{position:absolute;top:0}
+.sheet .c{text-align:center;font-weight:700}
+.sheet .h12{font-size:12px;line-height:16.8px}
+.sheet .h11{font-size:11px;line-height:15.4px}
+.sheet .red{color:#f00}
+.sheet hr{border:0;border-top:1px dashed #000;margin:4px 0 6px}
+.sheet .logo{display:block;margin:0 auto 4px;width:161px}
+.empty{display:grid;place-items:center;min-height:420px;color:var(--muted);text-align:center;border:1px dashed var(--line);border-radius:6px;padding:24px}
+.empty p{max-width:34ch;margin:0}
+.ver{font-size:.78rem!important;color:var(--muted)}
+.previewlabel{font-size:.88rem;color:var(--muted);margin:0 0 10px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<script src="../nav.js"></script>
+<div class="wrap">
+  <header>
+    <img id="hdrLogo" alt="Armodilo Display Solutions">
+    <div>
+      <h1>Commercial invoice builder</h1>
+      <p>Turn a FedEx commercial invoice into the Armodilo version, ready for Google Docs.</p>
+      <p class="ver" id="ver">Version 2026-11-11a · <span id="pc"></span> · <span id="bd">Loading material breakdown…</span></p>
+    </div>
+  </header>
+
+  <div class="grid">
+    <div class="panel">
+      <section>
+        <p class="step"><span>1</span>Upload the FedEx invoice (.txt or PDF)</p>
+        <label class="drop" id="drop" for="pdf">
+          <strong>Drop the FedEx .txt or PDF here</strong>
+          <small>or click to choose a file</small>
+          <input type="file" id="pdf" accept=".txt,text/plain,.pdf,application/pdf">
+        </label>
+        <div class="file" id="fileName"></div>
+      </section>
+
+      <section>
+        <p class="step"><span>2</span>Check the details</p>
+        <label for="aci">ACI number</label>
+        <input type="text" id="aci" inputmode="numeric" placeholder="Fills in from the file name" disabled>
+        <p class="hint" id="aciHint">Read from the number at the start of the file name.</p>
+        <div id="awbBox" hidden>
+          <label for="awb">Air Waybill Nbr</label>
+          <input type="text" id="awb" inputmode="numeric" disabled>
+          <p class="hint">The FedEx file has an Air Waybill Nbr, so it's printed on the invoice. It matches the ACI number unless you change it here.</p>
+        </div>
+        <label for="email">Importer email</label>
+        <input type="email" id="email" placeholder="Optional" disabled>
+        <p class="hint">Shown on the importer ID/EIN line. Saved customers fill in automatically.</p>
+        <label for="comments">Comments (one per line)</label>
+        <textarea id="comments" rows="3" disabled style="width:100%;box-sizing:border-box;font:inherit;font-size:.85rem;padding:.5rem;resize:vertical"></textarea>
+        <p class="hint" id="commentsHint">Filled in from the FedEx file.</p>
+        <details class="imp" id="impBox">
+          <summary>Edit importer details</summary>
+          <p class="hint">Filled in from the FedEx file. Changes show in the preview and both downloads.</p>
+          <div class="fld"><label for="im_name">Name</label><input type="text" id="im_name" data-im="name" disabled></div>
+          <div class="fld"><label for="im_company">Company</label><input type="text" id="im_company" data-im="company" disabled></div>
+          <div class="fld"><label for="im_street0">Address line 1</label><input type="text" id="im_street0" data-im="street0" disabled></div>
+          <div class="fld"><label for="im_street1">Address line 2</label><input type="text" id="im_street1" data-im="street1" placeholder="Optional" disabled></div>
+          <div class="fields">
+            <div class="fld"><label for="im_city">City</label><input type="text" id="im_city" data-im="city" disabled></div>
+            <div class="fld"><label for="im_state">State / province</label><input type="text" id="im_state" data-im="state" disabled></div>
+            <div class="fld"><label for="im_zip">ZIP / postal code</label><input type="text" id="im_zip" data-im="zip" disabled></div>
+            <div class="fld"><label for="im_country">Country</label><input type="text" id="im_country" data-im="country" disabled></div>
+          </div>
+          <div class="fields">
+            <div class="fld"><label for="im_phone">Phone</label><input type="text" id="im_phone" data-im="phone" disabled></div>
+            <div class="fld"><label for="im_id">ID/EIN</label><input type="text" id="im_id" data-im="id" disabled></div>
+          </div>
+        </details>
+        <div id="metal"></div>
+        <div id="warn"></div>
+      </section>
+
+      <section>
+        <p class="step"><span>3</span>Download</p>
+        <button id="dl" disabled>Download for Google Docs (.docx)</button>
+        <button id="dlpdf" class="outline" disabled>Download PDF (.pdf)</button>
+        <div class="status" id="status" role="status" aria-live="polite"></div>
+        <p class="gdocs">To open it in Google Docs: in Google Drive, choose New, then File upload, pick the downloaded file, and open it with Google Docs. The PDF button gives you a ready-to-send PDF directly.</p>
+      </section>
+    </div>
+
+    <div>
+      <p class="previewlabel" id="previewLabel">Preview</p>
+      <div class="stage" id="stage">
+        <div class="empty"><p>Upload a FedEx commercial invoice (.txt or PDF) to see the Armodilo version here.</p></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="config.js?v=2026-11-11a"></script>
+<script src="assets.js?v=2026-11-11a"></script>
+<script src="ci-core.js?v=2026-11-11a"></script>
+<script>
+const CONFIG = window.CONFIG, LOGO_B64 = window.LOGO_B64, SIG_B64 = window.SIG_B64;
+const CONFIG_VERSION = '2026-11-11a';   // the config.js this page expects
+(function(){
+  const $ = id => document.getElementById(id);
+  $('hdrLogo').src = 'data:image/png;base64,' + LOGO_B64;
+  const showCount = () => { $('pc').textContent = Object.keys(CONFIG.parts || {}).length + ' part numbers loaded'; };
+  showCount();
+  // ---- live material breakdown from the Google Doc (via its Apps Script link in config.js) ----
+  let LIVE_PROBLEMS = [], LIVE_NOTE = '';
+  const KEY = 'armodilo-breakdown-v1';
+  const applyLive = (raw, label) => {
+    const live = ArmodiloCI.parseBreakdown(raw);
+    if (!Object.keys(live.parts).length) throw new Error('no products found in the Doc');
+    CONFIG.parts = ArmodiloCI.mergeBreakdown(CONFIG, live).parts;
+    LIVE_PROBLEMS = live.problems.map(p => `Google Doc: ${p}. The built-in breakdown is used for that product.`);
+    showCount(); $('bd').textContent = label;
+  };
+  const breakdownReady = (async () => {
+    const url = CONFIG.breakdown_url;
+    if (!url) { $('bd').textContent = 'Material breakdown: built-in'; return; }
+    try {
+      const res = await fetch(url, { cache: 'no-store' });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const raw = await res.json();
+      if (raw.error) throw new Error(raw.error);
+      applyLive(raw, 'Material breakdown: live from the Google Doc');
+      try { localStorage.setItem(KEY, JSON.stringify({ at: Date.now(), raw })); } catch (e) { /* storage full: fine */ }
+    } catch (e) {
+      let saved = null;
+      try { saved = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e2) {}
+      if (saved && saved.raw) {
+        const when = new Date(saved.at).toLocaleString();
+        try { applyLive(saved.raw, 'Material breakdown: saved copy from ' + when); } catch (e3) {}
+        LIVE_NOTE = `Couldn\u2019t reach the Google Doc (${e.message}), so the breakdown saved on ${when} is being used.`;
+      } else {
+        $('bd').textContent = 'Material breakdown: built-in';
+        LIVE_NOTE = `Couldn\u2019t reach the Google Doc (${e.message}), so the built-in breakdown is being used.`;
+      }
+    }
+  })();
+  let parsed = null, srcName = '';
+
+  const drop = $('drop'), input = $('pdf');
+  ['dragenter','dragover'].forEach(e => drop.addEventListener(e, ev => { ev.preventDefault(); drop.classList.add('over'); }));
+  ['dragleave','drop'].forEach(e => drop.addEventListener(e, ev => { ev.preventDefault(); drop.classList.remove('over'); }));
+  drop.addEventListener('drop', ev => { const f = ev.dataTransfer.files[0]; if (f) handle(f); });
+  input.addEventListener('change', () => { if (input.files[0]) handle(input.files[0]); });
+  ['aci','email'].forEach(id => $(id).addEventListener('input', () => { if (parsed) { if (id === 'aci' && !awbEdited) $('awb').value = $('aci').value; syncAwb(); render(); showWarnings(); } }));
+  let awbEdited = false;   // the Air Waybill box follows the ACI number until someone types in it
+  $('awb').addEventListener('input', () => { awbEdited = true; if (parsed) { syncAwb(); render(); showWarnings(); } });
+  $('comments').addEventListener('input', () => {
+    if (!parsed) return;
+    const lines = $('comments').value.split('\n').map(t => t.trim());
+    while (lines.length > 3 && !lines[lines.length - 1]) lines.pop();
+    while (lines.length < 3) lines.push('');
+    parsed.comments = lines.map((t, i) => `${i + 1})${t}`); parsed.comments_edited = true;
+    render(); showWarnings();
+  });
+  function syncAwb() { if (parsed) parsed.awb_out = parsed.has_awb ? $('awb').value.trim() : undefined; }
+  document.querySelectorAll('[data-im]').forEach(inp => inp.addEventListener('input', () => {
+    if (!parsed) return;
+    const im = parsed.importer, f = inp.dataset.im, v = inp.value.trim();
+    if (f === 'street0' || f === 'street1') { const s = [document.getElementById('im_street0').value.trim(), document.getElementById('im_street1').value.trim()]; im.street = s.filter(Boolean); }
+    else if (f === 'id') im.id = v || 'n/a';
+    else im[f] = v;
+    render(); showWarnings();
+  }));
+
+  function setStatus(msg, cls) { const s = $('status'); s.textContent = msg; s.className = 'status' + (cls ? ' ' + cls : ''); }
+
+  async function handle(file) {
+    srcName = file.name; $('fileName').textContent = file.name;
+    setStatus('Reading the invoice…');
+    await breakdownReady;
+    try {
+      const isTxt = /\.txt$/i.test(file.name) || file.type === 'text/plain';
+      const buf = new Uint8Array(await file.arrayBuffer());
+      const lines = isTxt
+        ? ArmodiloCI.extractTextLines(new TextDecoder('utf-8').decode(buf))
+        : await ArmodiloCI.extractLines(pdfjsLib, buf);
+      parsed = ArmodiloCI.parse(lines);
+      const cust = CONFIG.customers[(parsed.importer.company || '').toUpperCase()] || {};
+      const fromName = ArmodiloCI.aciFromName(file.name);
+      $('aci').value = fromName || parsed.awb || parsed.tracking[0] || '';
+      $('aciHint').textContent = fromName ? 'Read from the file name.'
+        : parsed.awb ? 'No number in the file name, so this is the Air Waybill Nbr from the FedEx file.'
+        : parsed.tracking[0] ? 'No number in the file name, so this is the tracking number. Change it if needed.'
+        : 'No number in the file name. Type the ACI number here.';
+      awbEdited = false;
+      $('awbBox').hidden = !parsed.has_awb;
+      $('awb').value = parsed.has_awb ? $('aci').value : '';
+      $('awb').disabled = !parsed.has_awb;
+      syncAwb();
+      parsed.comments_fedex_blank = ArmodiloCI.commentsBlank(parsed);
+      $('comments').value = ArmodiloCI.commentText({ comments: ArmodiloCI.commentsFor(parsed, CONFIG) }).join('\n');
+      $('commentsHint').textContent = parsed.comments_fedex_blank ? 'The FedEx file had no comments, so these are the standard ones from config.js.' : 'Filled in from the FedEx file.';
+      $('comments').disabled = false;
+      $('email').value = cust.email || '';
+      parsed.items.forEach(it => { const m = ArmodiloCI.matchPart(CONFIG, it.part, it.desc); it.metal_key = m.key || ''; it.metal_how = m.how || ''; });
+      // importer box: start from the FedEx importer, using the consignee's ID/EIN and phone where FedEx left them blank
+      const im = parsed.importer, cn = parsed.consignee;
+      im.id = im.id || cn.id || 'n/a'; im.phone = im.phone || cn.phone;
+      const imVals = { name: im.name, company: im.company, street0: im.street[0] || '', street1: im.street[1] || '', city: im.city, state: im.state, zip: im.zip, country: im.country, phone: im.phone, id: im.id };
+      document.querySelectorAll('[data-im]').forEach(inp => { inp.value = imVals[inp.dataset.im] || ''; inp.disabled = false; });
+      renderMetal();
+      $('aci').disabled = $('email').disabled = false;
+      $('dl').disabled = $('dlpdf').disabled = false;
+      render(); showWarnings();
+      setStatus('Invoice read. Check the preview, then download.', 'ok');
+    } catch (e) {
+      parsed = null; $('dl').disabled = $('dlpdf').disabled = true; $('metal').innerHTML = '';
+      $('awbBox').hidden = true; $('awb').disabled = true; $('comments').value = ''; $('comments').disabled = true;
+      document.querySelectorAll('[data-im]').forEach(inp => { inp.value = ''; inp.disabled = true; });
+      setStatus(e.message || 'Could not read that file.', 'err');
+    }
+  }
+
+  // one block per invoice line: FedEx lines get a metal-content dropdown, added lines get product fields
+  function renderMetal() {
+    const keys = Object.keys(CONFIG.parts).sort();
+    const short = k => CONFIG.parts[k].title.replace(/ \(.*$/, '');
+    let out = '<p class="metal-title">Products and metal content for page 2</p>';
+    parsed.items.forEach((it, i) => {
+      if (!it.added) {
+        const id = 'metal' + i;
+        const hint = it.metal_key ? (it.metal_how ? `Matched by ${it.metal_how}.` : 'Chosen by hand.') : (it.metal_manual ? 'Set to none.' : 'No match found. Choose the product.');
+        out += `<div class="metal-line"><label for="${id}">Line ${i + 1}: ${escapeHtml(it.part)} \u2014 ${escapeHtml(it.desc)}</label>` +
+          `<select id="${id}" data-i="${i}" data-kind="metal"><option value="">None (add later)</option>` +
+          keys.map(k => `<option value="${escapeHtml(k)}"${k === it.metal_key ? ' selected' : ''}>${escapeHtml(k)} \u2014 ${escapeHtml(short(k))}</option>`).join('') +
+          `</select><p class="hint">${hint}</p></div>`;
+        return;
+      }
+      const f = (name, label, val, extra = '') => `<div class="fld"><label for="${name}${i}">${label}</label><input type="text" id="${name}${i}" data-i="${i}" data-f="${name}" value="${escapeHtml(val)}" ${extra}></div>`;
+      out += `<div class="metal-line added"><div class="line-head"><span>Line ${i + 1} (added)</span><button type="button" class="linkbtn" data-rm="${i}" aria-label="Remove line ${i + 1}">Remove</button></div>` +
+        `<label for="pick${i}">Product</label><select id="pick${i}" data-i="${i}" data-kind="pick"><option value="">Other product (no saved metal content)</option>` +
+        keys.map(k => `<option value="${escapeHtml(k)}"${k === it.metal_key ? ' selected' : ''}>${escapeHtml(k)} \u2014 ${escapeHtml(short(k))}</option>`).join('') + '</select>' +
+        '<div class="fields">' + f('part', 'Part Nbr', it.part) + f('qty_in', 'Qty', it.qty_in != null ? it.qty_in : (+it.qty).toString(), 'inputmode="decimal"') +
+        f('unit', 'Unit value (US$)', it.unit, 'inputmode="decimal"') + f('hs', 'HS Code', it.hs) + '</div>' +
+        f('desc', 'Description', it.desc) +
+        `<p class="hint" id="cv${i}">Commodity value: US$${it.commodity_value}${it.metal_key ? '' : ' \u00b7 page 2 will say \u201cMETAL CONTENT TO BE ADDED\u201d'}</p></div>`;
+    });
+    out += '<button type="button" class="secondary" id="addLine">+ Add another product</button>';
+    $('metal').innerHTML = out;
+    const refresh = () => { render(); showWarnings(); };
+    $('metal').querySelectorAll('select').forEach(sel => sel.addEventListener('change', () => {
+      const i = +sel.dataset.i, it = parsed.items[i];
+      if (sel.dataset.kind === 'pick') {
+        parsed.items[i] = sel.value ? ArmodiloCI.newLine(CONFIG, sel.value) : Object.assign(it, { metal_key: '', metal_how: '' });
+        if (!sel.value) ArmodiloCI.fillLine(parsed.items[i]);
+      } else { it.metal_key = sel.value; it.metal_how = ''; it.metal_manual = true; }
+      renderMetal(); refresh();
+      const again = document.getElementById(sel.id); if (again) again.focus();
+    }));
+    $('metal').querySelectorAll('input[data-f]').forEach(inp => inp.addEventListener('input', () => {
+      const i = +inp.dataset.i, it = parsed.items[i];
+      it[inp.dataset.f] = inp.value.trim();
+      ArmodiloCI.fillLine(it);
+      $('cv' + i).textContent = `Commodity value: US$${it.commodity_value}` + (it.metal_key ? '' : ' \u00b7 page 2 will say \u201cMETAL CONTENT TO BE ADDED\u201d');
+      refresh();
+    }));
+    $('metal').querySelectorAll('[data-rm]').forEach(b => b.addEventListener('click', () => {
+      parsed.items.splice(+b.dataset.rm, 1); renderMetal(); refresh(); $('addLine').focus();
+    }));
+    $('addLine').addEventListener('click', () => {
+      parsed.items.push(ArmodiloCI.fillLine({ added: true, part: '', marks: '', mfr: 'CA', net_wgt: '0.00', wgt_unit: 'lbs', hs: '', qty: '1', uom: 'EA', unit: '', desc: '', metal_key: '' }));
+      renderMetal(); refresh();
+      document.getElementById('pick' + (parsed.items.length - 1)).focus();
+    });
+  }
+
+  function showWarnings() {
+    const w = ArmodiloCI.warnings(parsed, CONFIG, $('email').value.trim());
+    if (!$('aci').value.trim()) w.unshift('The ACI number is empty.');
+    if (parsed && parsed.has_awb && !$('awb').value.trim()) w.unshift('The Air Waybill Nbr is empty, so it will print blank.');
+    if (parsed && parsed.comments_fedex_blank && !parsed.comments_edited) w.push('The FedEx file had blank comments, so the standard USMCA comments were filled in. Change them under Comments if they don\u2019t apply to this shipment.');
+    if (LIVE_NOTE) w.unshift(LIVE_NOTE);
+    w.push(...LIVE_PROBLEMS);
+    const nParts = Object.keys(CONFIG.parts || {}).length, oldFmt = Object.values(CONFIG.parts || {}).some(p => !p.title);
+    if (oldFmt || CONFIG.version !== CONFIG_VERSION) w.unshift(`config.js is out of date (version ${CONFIG.version || 'unknown'}, ${nParts} parts). Upload the latest config.js to GitHub.`);
+    $('warn').innerHTML = w.length ? '<div class="warn"><strong>Worth checking</strong><ul>' + w.map(x => '<li>' + escapeHtml(x) + '</li>').join('') + '</ul></div>' : '';
+  }
+  const escapeHtml = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+  // HTML preview that mirrors the document layout (positions in points)
+  function render() {
+    const d = ArmodiloCI.withTotals(parsed), L = 14.4, cn = d.consignee, im = d.importer, email = $('email').value.trim();
+    const row = segs => '<div class="r">' + segs.map(([x, t, a]) => a === 'right'
+      ? `<span style="right:${597.6 - x}px">${escapeHtml(t)}</span>`
+      : `<span style="left:${x - L}px">${escapeHtml(t)}</span>`).join('') + '</div>';
+    const h = [];
+    h.push(`<img class="logo" alt="" src="data:image/png;base64,${LOGO_B64}">`);
+    h.push(`<div class="c h12">ACI-${escapeHtml($('aci').value.trim())}</div><div class="c h12">Commercial Invoice</div>`);
+    const HD = ArmodiloCI.headings(d, CONFIG);
+    h.push(`<div class="c h11${HD.black ? '' : ' red'}">${escapeHtml(HD.p1)}</div>`);
+    const AX = ArmodiloCI.AWB_X, R = ArmodiloCI.AMT_R, awb = d.has_awb ? (d.awb_out || '') : '';
+    h.push(row([[L,'Invoice Number'],[95.5,'Purpose of Shipment'],[302.7,'Curr'],[355.5,'Ult Dest.'],...(d.has_awb?[[AX,'Air Waybill Nbr.']]:[])]));
+    h.push(row([[122.4,d.purpose],[300.7,d.currency],[355.1,d.ult_dest],...(awb?[[AX,awb]]:[])]));
+    h.push(row([[L,'Export Dt'],[81.1,'C.I. References'],[275.5,'Pkgs'],[333.8,'Bill T/C']]));
+    h.push(row([[L,d.export_date],[86.6,d.ci_ref],[222.8,d.pkg_type],[291.1,d.pkgs],[332.8,d.bill_tc]]), '<hr>');
+    h.push(row([[L,'Shipper:'],[302.4,'Consignee:']]));
+    const left = CONFIG.shipper.lines, right = [cn.name, cn.company, ...cn.street, `${cn.city},  ${cn.state} ${cn.zip} ${cn.country}`, cn.phone];
+    for (let k = 0; k < Math.max(left.length, right.length); k++) h.push(row([[L, left[k] || ''], [302.4, right[k] || '']]));
+    h.push(row([[L,`ID/EIN: ${CONFIG.shipper.id_ein}`],[268.1,'ID/EIN:']]), '<hr>');
+    h.push(row([[L,'Broker:'],[266.4,'Importer:']]));
+    const bl = [...d.broker, CONFIG.broker_extra_line], ir = [im.name, im.company, ...im.street, `${im.city},  ${im.state} ${im.zip} ${im.country}`];
+    for (let k = 0; k < Math.max(bl.length, ir.length); k++) h.push(row([[L, bl[k] || ''], [266.4, ir[k] || '']]));
+    h.push('<div class="r"></div>');
+    h.push(`<div class="c h11">${escapeHtml([`ID/EIN: ${im.id || cn.id || 'n/a'}`, email, im.phone || cn.phone].filter(Boolean).join('  '))}</div><hr>`);
+    for (const it of d.items) {
+      h.push(row([[L,`Part Nbr:${it.part}`],[230.5,'Marks/Nbrs:'+(it.marks?' '+it.marks:'')],[328.8,`C/T MFR:${it.mfr}`],[413.7,'Net Wgt:'],[474.8,it.net_wgt],[511,it.wgt_unit]]));
+      h.push(row([[L,`HS Code: ${it.hs}`],...ArmodiloCI.qtySegs(it),[307.2,'Unit Value:'],[402.6,`Commodity Value: ${it.commodity_value}`]]));
+      h.push(row([[302.4,it.unit_value]]), row([[L,`Desc: ${it.desc}`]]), '<hr>');
+    }
+    (d.notes || []).forEach(n => h.push(row([[L, n]]), '<hr>'));
+    h.push(row([[194.9,'Total Shipment'],[297.1,d.total_weight],[363.8,'Total Commodity'],[R,d.total_commodity,'right']]));
+    h.push(row([[230.4,'Weight:'],[308.5,'lbs'],[410.2,'Value:']]));
+    [['Terms of Sale:',d.terms],['Freight:',d.freight],['Insurance:',d.insurance],['Others:',d.others]].forEach(([a,b]) => h.push(row([[410,a,'right'],[R,b,'right']])));
+    h.push(row([[410,'Total Invoice Value:','right'],[R,(d.currency==='USD'?'US$':'')+d.total_invoice,'right']]));
+    h.push('<div class="r"></div>', row([[L,'Comments:']]), ...ArmodiloCI.commentsFor(d, CONFIG).map(c => row([[L,c]])));
+    if (d.tracking.length) h.push(row([[L,'Tracking Numbers:'],[108,d.tracking.join(', ')]]));
+    h.push('<div class="r"></div>');
+    h.push(row([[L,'I declare all information in this invoice to be true and correct.']]));
+    h.push(`<div style="position:relative;display:flex;align-items:flex-end;height:34px;white-space:nowrap">Signature of shipper:&nbsp;<img alt="Signature" src="data:image/png;base64,${SIG_B64}" style="width:54px;height:30px;margin-bottom:-4px">&nbsp;SHIPPING@ARMODILO.COM<span style="position:absolute;bottom:0;left:${348-L}px">${escapeHtml(d.sig_date)}</span></div>`);
+    const P1 = ArmodiloCI.p1Pages(d), NP = ArmodiloCI.totalPages(d, CONFIG);
+    h.push('<div class="r"></div><hr style="border-top-style:solid"><div class="r"></div>', row([[L, `Page ${P1} of ${NP}`]]));
+    // page 2: metal content
+    const h2 = [`<div class="c h12${HD.black ? '' : ' red'}">${HD.p2}</div><div class="r"></div>`];
+    const blue = t => `<span style="color:#00f">${escapeHtml(t)}</span>`;
+    const splitP = t => { const m = t.match(/^(.*?)( \(.*\))$/); return m ? [m[1], m[2]] : [t, '']; };
+    d.items.forEach((it, n) => {
+      const p = ArmodiloCI.partFor(CONFIG, it);
+      if (!p) { h2.push(`<div class="red" style="font-weight:700">Line ${n + 1}: ${escapeHtml(it.part + ' ' + it.desc)} -- METAL CONTENT TO BE ADDED</div><div class="r"></div>`); return; }
+      const [t1, t2] = splitP(`Line ${n + 1}: ${p.title}`);
+      h2.push(`<div class="red" style="font-weight:700${p.title_color === 'black' ? ';color:#000' : ''}">${escapeHtml(t1)}${t2 ? '&nbsp; ' + blue(t2.trim()) : ''}</div><div class="r"></div>`);
+      const q = parseFloat(it.qty) || 1;
+      p.components.forEach(c => {
+        ArmodiloCI.componentFields(c, q).forEach(x => h2.push(
+          `<div class="red r"><span style="left:${50.4 - L}px">${escapeHtml(x.label)}:</span>` +
+          `<span style="left:${ArmodiloCI.VALUE_X - L}px${x.bold ? ';font-weight:700' : ''}">${escapeHtml(x.value)}${x.note ? '&nbsp; ' + blue(x.note) : ''}</span></div>`));
+        h2.push('<div class="r"></div>');
+      });
+      (p.images || []).forEach(im => { const sz = ArmodiloCI.fitImg(im); h2.push(`<div style="text-align:center;margin:4px 0 14px"><img alt="" style="width:${sz.w}px;height:${sz.h}px" src="data:${im.mime || 'image/jpeg'};base64,${im.data}"></div>`); });
+    });
+    h2.push(row([[L, `Page ${NP} of ${NP}`]]));
+    $('stage').innerHTML = '<div class="sheet">' + h.join('') + '</div><div class="sheet" style="margin-top:20px">' + h2.join('') + '</div>';
+    $('previewLabel').textContent = 'Preview of both pages.';
+  }
+
+  // shared download: Claude's download prompt when running on claude.ai, a normal browser download elsewhere
+  async function save(blob, filename) {
+    const downloads = window.claude ? await window.claude.use('downloads') : null;
+    if (downloads) { await downloads.save({ filename, data: blob }); return; }
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename;
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  }
+  async function download(kind) {
+    if (!parsed) return;
+    const btns = [$('dl'), $('dlpdf')]; btns.forEach(b => b.disabled = true);
+    setStatus(kind === 'pdf' ? 'Building the PDF…' : 'Building the document…');
+    try {
+      const email = $('email').value.trim(), aci = $('aci').value.trim() || 'XXXXXXXXXXXX';
+      const company = (parsed.importer.company || parsed.consignee.company || 'Customer').replace(/[\\/:*?"<>|]/g, '');
+      const base = `${parsed.tracking[0] || aci} - ${company} CI`;
+      let blob, filename;
+      if (kind === 'pdf') {
+        if (!window.jspdf) throw new Error('The PDF tool did not load. Check your internet connection and reload the page.');
+        blob = ArmodiloCI.buildPdf(window.jspdf.jsPDF, parsed, CONFIG, aci, email, LOGO_B64, SIG_B64); filename = base + '.pdf';
+      } else {
+        blob = await ArmodiloCI.buildDocx(JSZip, parsed, CONFIG, aci, email, LOGO_B64, SIG_B64); filename = base + '.docx';
+      }
+      await save(blob, filename);
+      setStatus('Saved ' + filename + '.', 'ok');
+    } catch (e) {
+      const code = e && e.code;
+      setStatus(code === 'declined' ? 'Download cancelled.' : (code ? 'Download is not available here (' + code + ').' : (e.message || 'Something went wrong.')), code === 'declined' ? '' : 'err');
+    } finally { btns.forEach(b => b.disabled = !parsed); }
+  }
+  $('dl').addEventListener('click', () => download('docx'));
+  $('dlpdf').addEventListener('click', () => download('pdf'));
+})();
+</script>
+</body>
+</html>

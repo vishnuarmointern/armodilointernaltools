@@ -1,0 +1,1226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; connect-src https://script.google.com https://script.googleusercontent.com; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src data:;">
+<meta name="robots" content="noindex, nofollow">
+<title>Armodilo · Sales Revenue</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&display=swap">
+<style>
+:root{
+  color-scheme:light;
+  --bg:#f7f4ee; --card:#fffdf9; --ink:#1d1c1a; --ink2:#59564f; --muted:#8a867d;
+  --line:#e7e1d6; --hover:#f1ece2;
+  --accent:#1f5a43; --accent-ink:#ffffff; --accent-soft:#e1ebe5; --prior:#a8c6b7;
+  --up:#0b7a3b; --down:#b83232;
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100; --s5:#e87ba4; --s6:#008300; --s7:#6250d6; --s8:#e34948;
+  --other:#b3aea4;
+  --c1:#1f5a43; --c2:#3d7a61; --c3:#5f9a80; --c4:#86b6a0; --c5:#b0d0c0;
+  --serif:'Source Serif 4',Georgia,'Times New Roman',serif;
+  --sans:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root:where(:not([data-theme="light"])){
+    color-scheme:dark;
+    --bg:#141513; --card:#1c1e1b; --ink:#efede8; --ink2:#c5c2ba; --muted:#918e86;
+    --line:#2f322d; --hover:#252823;
+    --accent:#63b591; --accent-ink:#10231a; --accent-soft:#22332b; --prior:#335c4a;
+    --up:#4cc27f; --down:#ef7f7f;
+    --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --s6:#008300; --s7:#9085e9; --s8:#e66767;
+    --other:#6d6a63;
+    --c1:#7fd0aa; --c2:#63b591; --c3:#4c9676; --c4:#3a775d; --c5:#2c5a47;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#141513; --card:#1c1e1b; --ink:#efede8; --ink2:#c5c2ba; --muted:#918e86;
+  --line:#2f322d; --hover:#252823;
+  --accent:#63b591; --accent-ink:#10231a; --accent-soft:#22332b; --prior:#335c4a;
+  --up:#4cc27f; --down:#ef7f7f;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --s6:#008300; --s7:#9085e9; --s8:#e66767;
+  --other:#6d6a63;
+  --c1:#7fd0aa; --c2:#63b591; --c3:#4c9676; --c4:#3a775d; --c5:#2c5a47;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);font-feature-settings:'tnum' 1,'cv11' 1}
+button,select,input{font:inherit;color:inherit}
+[hidden]{display:none!important}
+.wrap{max-width:1160px;margin:0 auto;padding:28px 24px 64px}
+
+/* ---------- sign in ---------- */
+.login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+.login form{width:100%;max-width:380px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:36px 32px}
+.login .brand{margin-bottom:26px}
+.login h1{font:600 28px/1.2 var(--serif);margin:0 0 6px}
+.login p{margin:0 0 24px;color:var(--ink2)}
+.field{display:block;margin-bottom:14px}
+.field span{display:block;font-size:12px;font-weight:500;color:var(--ink2);margin-bottom:6px}
+.field input{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg)}
+.field input:focus,select:focus,button:focus-visible,.search:focus{outline:2px solid var(--accent);outline-offset:1px}
+.primary{width:100%;padding:11px 14px;border:0;border-radius:8px;background:var(--accent);color:var(--accent-ink);font-weight:600;cursor:pointer;margin-top:6px}
+.primary:disabled{opacity:.6;cursor:default}
+.err{color:var(--down);font-size:13px;min-height:20px;margin-top:12px}
+
+/* ---------- header ---------- */
+.brand{font-size:11px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--accent)}
+.top{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;flex-wrap:wrap;padding-bottom:22px;border-bottom:1px solid var(--line)}
+.top h1{font:600 clamp(30px,4.4vw,42px)/1.1 var(--serif);margin:8px 0 8px;letter-spacing:-.01em}
+.sub{color:var(--ink2);font-size:13px}
+.sub b{font-weight:500;color:var(--ink)}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn{padding:7px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);cursor:pointer;font-size:13px;font-weight:500;white-space:nowrap}
+.btn:hover{background:var(--hover)}
+.btn:disabled{opacity:.55;cursor:default}
+
+/* ---------- date range ---------- */
+.range{display:flex;flex-wrap:wrap;gap:14px 28px;align-items:center;padding:18px 0 4px}
+.presets{display:flex;flex-wrap:wrap;gap:6px}
+.chip{padding:6px 12px;border:1px solid var(--line);border-radius:999px;background:transparent;cursor:pointer;font-size:13px;color:var(--ink2)}
+.chip:hover{background:var(--hover)}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:500}
+.pick{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center}
+.pick label{font-size:12px;font-weight:500;color:var(--ink2);margin-right:6px}
+.dmy{display:inline-flex;align-items:center;gap:4px}
+.dmy i{font-style:normal;color:var(--muted)}
+select{padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--card);cursor:pointer;font-size:13px}
+
+/* ---------- tiles ---------- */
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:20px 0 6px}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 20px}
+.tile .k{font-size:12px;font-weight:500;color:var(--ink2)}
+.tile .v{font:600 clamp(24px,2.6vw,32px)/1.15 var(--serif);margin:8px 0 4px;letter-spacing:-.01em;white-space:nowrap}
+.tile .n{font-size:12px;color:var(--muted)}
+.up{color:var(--up)} .down{color:var(--down)}
+.note{font-size:12px;color:var(--muted);margin:8px 0 0}
+
+/* ---------- cards ---------- */
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:22px 24px;margin-top:14px;min-width:0}
+.eyebrow{font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.take{font:500 20px/1.3 var(--serif);margin:6px 0 16px;max-width:60ch}
+.cardhead{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap}
+svg{display:block;width:100%;height:auto;overflow:visible}
+svg text{font-family:var(--sans);fill:var(--ink2);font-size:11px}
+svg .strong{fill:var(--ink);font-weight:600}
+svg .mut{fill:var(--muted)}
+svg .gridl{stroke:var(--line);stroke-width:1}
+svg .hit{fill:transparent;cursor:default}
+svg .hit:hover{fill:var(--hover)}
+svg .nop{pointer-events:none}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:12px;color:var(--ink2);margin-bottom:10px}
+.sw{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.mix{display:flex;gap:24px;align-items:center;flex-wrap:wrap}
+.mix .donut{flex:0 0 200px;max-width:200px}
+.mix table{flex:1 1 220px}
+.lg{width:100%;border-collapse:collapse;font-size:13px}
+.lg td{padding:6px 0;border-bottom:1px solid var(--line)}
+.lg tr:last-child td{border-bottom:0}
+.lg td.r{text-align:right;white-space:nowrap;padding-left:12px}
+.lg td.p{color:var(--ink2);width:56px}
+.toggle{display:inline-flex;align-items:center;gap:8px;font-size:12px;color:var(--ink2);cursor:pointer}
+.toggle input{accent-color:var(--accent);width:15px;height:15px;margin:0}
+details.map{margin-top:16px;font-size:12px;color:var(--ink2)}
+details.map summary{cursor:pointer;color:var(--muted)}
+details.map table{border-collapse:collapse;margin-top:8px;width:100%}
+details.map td{padding:3px 12px 3px 0;vertical-align:top;border-bottom:1px solid var(--line)}
+details.map code{font:12px ui-monospace,SFMono-Regular,Menlo,monospace}
+
+/* ---------- detail table styles ---------- */
+.tools{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:4px 0 14px}
+.search{flex:1 1 220px;max-width:340px;padding:8px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg);font-size:13px}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table.dt{width:100%;border-collapse:collapse;font-size:13px}
+.dt th{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.dt td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+.dt .r{text-align:right;white-space:nowrap}
+.dt tr.m>td{font-weight:500}
+.dt td:first-child{white-space:nowrap}
+.dt td.nest,.dt td.desc{white-space:normal}
+.dt td.desc{min-width:170px}
+.dt td.mu{color:var(--muted);white-space:nowrap}
+.dt tr.click{cursor:pointer}
+.dt tr.click:hover>td{background:var(--hover)}
+.dt tfoot td{font-weight:600;border-top:2px solid var(--ink);border-bottom:0}
+.dt td.nest{padding:0 0 10px 22px;background:transparent}
+.dt .dt{font-size:12.5px}
+.dt .dt th{font-size:10.5px}
+.exp{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+.exp:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+.chev{display:inline-block;width:8px;color:var(--muted);transition:transform .12s}
+tr.open>td>.exp>.chev{transform:rotate(90deg)}
+.desc{color:var(--ink2)}
+.empty{padding:28px 0;text-align:center;color:var(--muted)}
+.tag{display:inline-block;font-size:11px;padding:1px 8px;border-radius:999px;background:var(--accent-soft);color:var(--ink2);white-space:nowrap}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:3px;background:var(--bg);flex-wrap:wrap}
+.seg button{border:0;background:transparent;padding:6px 14px;border-radius:999px;cursor:pointer;font-size:13px;font-weight:500;color:var(--ink2)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.tools .toggle{margin-left:auto}
+
+.tip{position:fixed;z-index:20;pointer-events:none;background:var(--ink);color:var(--bg);font-size:12px;line-height:1.45;padding:8px 10px;border-radius:8px;max-width:280px;box-shadow:0 6px 20px rgba(0,0,0,.18)}
+.tip b{font-weight:600}
+.tip span{opacity:.75}
+.state{padding:80px 0;text-align:center;color:var(--ink2)}
+.printhead{display:none}
+footer{margin-top:26px;font-size:12px;color:var(--muted)}
+
+@media (max-width:900px){
+  .tiles{grid-template-columns:repeat(2,1fr)}
+  .grid{grid-template-columns:1fr}
+}
+@media (max-width:520px){
+  .wrap{padding:20px 14px 48px}
+  .card{padding:18px 16px}
+  .tile{padding:14px 14px}
+  .take{font-size:18px}
+  .actions .btn{padding:7px 10px}
+  .tools .toggle{margin-left:0}
+}
+
+@media print{
+  @page{margin:13mm}
+  :root,:root[data-theme="dark"],:root:where(:not([data-theme="light"])){
+    color-scheme:light;
+    --bg:#ffffff; --card:#ffffff; --ink:#1d1c1a; --ink2:#59564f; --muted:#7d7971;
+    --line:#ddd8cd; --hover:transparent;
+    --accent:#1f5a43; --accent-ink:#ffffff; --accent-soft:#e1ebe5; --prior:#a8c6b7;
+    --up:#0b7a3b; --down:#b83232;
+    --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100; --s5:#e87ba4; --s6:#008300; --s7:#6250d6; --s8:#e34948;
+    --other:#b3aea4;
+    --c1:#1f5a43; --c2:#3d7a61; --c3:#5f9a80; --c4:#86b6a0; --c5:#b0d0c0;
+  }
+  body{font-size:11px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .wrap{max-width:none;padding:0}
+  .noprint,.tip,.actions,.range,.tools,details.map,.toggle{display:none!important}
+  .printhead{display:block;font-size:12px;color:var(--ink2);margin-top:2px}
+  .top{padding-bottom:10px}
+  .top h1{font-size:26px;margin:4px 0}
+  .tiles{grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0 4px}
+  .tile{padding:10px 12px}
+  .tile .v{font-size:19px;margin:4px 0 2px}
+  .grid{grid-template-columns:1fr 1fr;gap:8px}
+  .card{padding:10px 14px;margin-top:8px;break-inside:avoid}
+  .note{margin:4px 0 0}
+  .legend{margin-bottom:4px}
+  .take{font-size:14px;margin:3px 0 8px}
+  .mix{gap:12px}
+  .mix .donut{flex-basis:130px;max-width:130px}
+  .lg{font-size:10.5px} .lg td{padding:3px 0}
+  .dt{font-size:10.5px}
+  .dt td,.dt th{padding:4px 8px}
+  .dt tr.sub{display:none}
+  .chev{display:none}
+  tr{break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<script src="../nav.js"></script>
+
+<!-- ======================= sign in ======================= -->
+<div class="login" id="login" hidden>
+  <form id="loginForm" autocomplete="on">
+    <div class="brand">Armodilo Display Solutions</div>
+    <h1>Sales Revenue</h1>
+    <p>Sign in to view the shareholder dashboard.</p>
+    <label class="field"><span>Username</span><input id="user" name="username" autocomplete="username" required></label>
+    <label class="field"><span>Password</span><input id="pass" name="password" type="password" autocomplete="current-password" required></label>
+    <button class="primary" id="loginBtn" type="submit">Sign in</button>
+    <div class="err" id="loginErr" role="alert"></div>
+  </form>
+</div>
+
+<!-- ======================= dashboard ======================= -->
+<div class="wrap" id="app" hidden>
+  <header class="top">
+    <div>
+      <div class="brand">Armodilo Display Solutions</div>
+      <h1>Sales Revenue</h1>
+      <div class="sub"><b>All amounts in CAD</b> · Product sales, before freight and tax · <span id="asof"></span></div>
+      <div class="printhead" id="printhead"></div>
+    </div>
+    <div class="actions">
+      <button class="btn" id="refresh" title="Reload the latest data from the sheet">↻ Refresh</button>
+      <button class="btn" id="csv">Download CSV</button>
+      <button class="btn" id="print">Print / PDF</button>
+      <button class="btn" id="theme" aria-label="Switch between light and dark">Dark</button>
+      <button class="btn" id="logout">Sign out</button>
+    </div>
+  </header>
+
+  <div class="state" id="state">Loading sales data…</div>
+
+  <main id="main" hidden>
+    <section class="range" aria-label="Date range">
+      <div class="presets" id="presets"></div>
+      <div class="pick">
+        <span><label>From</label><span class="dmy"><select id="fm" aria-label="From month"></select><i>·</i><select id="fd" aria-label="From day"></select><i>·</i><select id="fy" aria-label="From year"></select></span></span>
+        <span><label>To</label><span class="dmy"><select id="tm" aria-label="To month"></select><i>·</i><select id="td" aria-label="To day"></select><i>·</i><select id="ty" aria-label="To year"></select></span></span>
+      </div>
+    </section>
+
+    <section class="tiles" id="tiles" aria-label="Headline numbers"></section>
+    <p class="note" id="cmpnote"></p>
+
+    <section class="card">
+      <div class="eyebrow">Revenue over time</div>
+      <h2 class="take" id="takeTime"></h2>
+      <div class="legend" id="legTime"></div>
+      <div id="chartTime"></div>
+    </section>
+
+    <div class="grid">
+      <section class="card">
+        <div class="eyebrow">Revenue mix by product family</div>
+        <h2 class="take" id="takeMix"></h2>
+        <div class="mix"><div class="donut" id="chartMix"></div><table class="lg" id="legMix"></table></div>
+        <details class="map" id="famMap"></details>
+      </section>
+      <section class="card">
+        <div class="eyebrow">Top 10 part numbers</div>
+        <h2 class="take" id="takeTop"></h2>
+        <div id="chartTop"></div>
+      </section>
+    </div>
+
+    <section class="card">
+      <div class="cardhead">
+        <div class="eyebrow">Customer concentration</div>
+        <label class="toggle"><input type="checkbox" id="hideNames"> Hide customer names</label>
+      </div>
+      <h2 class="take" id="takeCust"></h2>
+      <div id="chartCust"></div>
+      <table class="lg" id="legCust" style="margin-top:12px"></table>
+    </section>
+
+    <section class="card detail">
+      <div class="cardhead">
+        <div class="eyebrow" id="detailEyebrow">By part number</div>
+        <div class="seg noprint" id="modeSeg" role="group" aria-label="Group the detail table by">
+          <button type="button" data-mode="part" aria-pressed="true">By Part Number</button>
+          <button type="button" data-mode="invoice" aria-pressed="false">By Invoice Number</button>
+        </div>
+      </div>
+      <h2 class="take" id="takeTable"></h2>
+      <div class="tools">
+        <input class="search" id="search" type="search" placeholder="Search part, description, invoice or customer" aria-label="Search the detail table">
+        <select id="sort" aria-label="Sort"></select>
+        <button type="button" class="btn" id="expandAll">Expand all months</button>
+        <button type="button" class="btn" id="collapseAll">Collapse all</button>
+        <label class="toggle"><input type="checkbox" id="hideNames2"> Hide customer names</label>
+      </div>
+      <div class="scroll" id="table"></div>
+      <p class="note" id="tableNote"></p>
+    </section>
+
+    <footer id="foot"></footer>
+  </main>
+</div>
+<div class="tip" id="tip" hidden></div>
+
+<script>
+'use strict';
+/* ============================================================
+   SETTINGS - the only things you should need to edit
+   ============================================================ */
+var API_URL = 'https://script.google.com/macros/s/AKfycbwZa0xJs4fwWasBvR49vVX0PF7mvIOB_IlLhC-XZYKU88e-FLTeV0_1OxbD-zcHwPsl/exec';
+
+/* Product family mapping. A part belongs to the first family whose list has
+   a prefix the part number starts with (after any leading "- " is removed).
+   Anything that matches nothing goes to "Other". Edit freely. */
+var FAMILY_RULES = [
+  ['Alur',                    ['ALUR']],
+  ['Floor',                   ['FLOOR']],
+  ['Curve',                   ['CURVE']],
+  ['Sphere',                  ['SPHERE']],
+  ['Surface',                 ['SURFACE', 'RT-DT']],   // Surface stands + Surface tube / mount cover spares
+  ['Keyo',                    ['KEYO']],
+  ['Wall',                    ['WALL']],
+  ['VESA',                    ['VESA']],
+  ['Tilt',                    ['TILT']],
+  ['Xero',                    ['XERO']],
+  ['Revi',                    ['REVI']],
+  ['Fit kits',                ['TFK', 'KFK', 'FK-']],
+  ['Machining & custom work', ['MA-', 'CUSTOM', 'UV ']],
+  ['Cables, ports & buttons', ['MISC CABLE', 'EXT-PORT', 'ON/OFF', 'CABLE']],
+  ['Accessories & spares',    ['TORX', 'SHELF', 'SPH-', 'EHR-', 'HO-']]
+];
+var MAX_SLICES = 6;   // families shown in the donut before the rest become "Other"
+
+/*LOGIC-START*/
+/* ============================================================
+   LOGIC - no page access in this block
+   ============================================================ */
+var MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+var OTHER = 'Other';
+
+function daysIn(y, m) { return new Date(y, m, 0).getDate(); }
+function dnum(y, m, d) { return y * 10000 + m * 100 + d; }
+function dparts(n) { return { y: Math.floor(n / 10000), m: Math.floor(n / 100) % 100, d: n % 100 }; }
+/* Same day one year earlier. A month-end stays a month-end (28/29 Feb). */
+function yearBack(n) {
+  var p = dparts(n), y = p.y - 1, last = daysIn(y, p.m);
+  return dnum(y, p.m, p.d === daysIn(p.y, p.m) ? last : Math.min(p.d, last));
+}
+function ordinal(d) {
+  var s = (d % 100 >= 11 && d % 100 <= 13) ? 'th' : (['th','st','nd','rd'][d % 10] || 'th');
+  return d + s;
+}
+function fmtDate(n) { var p = dparts(n); return p.d + ' ' + MONTHS[p.m - 1].slice(0, 3) + ' ' + p.y; }
+function monthLabel(ym) { return MONTHS[ym % 100 - 1] + ' ' + Math.floor(ym / 100); }
+
+function familyOf(part) {
+  for (var i = 0; i < FAMILY_RULES.length; i++) {
+    var list = FAMILY_RULES[i][1];
+    for (var j = 0; j < list.length; j++) {
+      if (part.indexOf(list[j]) === 0) return FAMILY_RULES[i][0];
+    }
+  }
+  return OTHER;
+}
+function prefixOf(part) { return part.split(/[-\s]/)[0] || part; }
+
+/* Turn the server payload into rows the page can filter quickly.
+   Money is held in whole cents so every total adds up exactly. */
+function prepare(payload) {
+  var parts = payload.parts.map(function (p) {
+    return { pn: p[0], desc: p[1] || '', fam: familyOf(p[0]) };
+  });
+  var customers = (payload.customers || []).map(function (c) {
+    return Array.isArray(c) ? { name: String(c[0]), no: String(c[1] || '') } : { name: String(c), no: '' };
+  });
+  var rows = [], minN = Infinity, maxN = 0, famAll = {}, custAll = {};
+  for (var i = 0; i < payload.rows.length; i++) {
+    var r = payload.rows[i], s = String(r[1]);
+    var n = dnum(+s.slice(0, 4), +s.slice(5, 7), +s.slice(8, 10));
+    if (!(n > 0)) continue;
+    var cents = Math.round(Number(r[7]) * 100);
+    rows.push({ o: String(r[0]), n: n, ym: Math.floor(n / 100), p: r[2], c: r[3],
+                q: Number(r[4]) || 0, u: Number(r[5]) || 0, disc: Number(r[6]) || 0, a: cents,
+                cur: String(r[8] || 'CAD'), rate: Number(r[9]) || 1 });
+    custAll[r[3]] = (custAll[r[3]] || 0) + cents;
+    if (n < minN) minN = n;
+    if (n > maxN) maxN = n;
+    var f = parts[r[2]].fam;
+    famAll[f] = (famAll[f] || 0) + cents;
+  }
+  /* A family keeps one colour for good, set by its all-time rank. */
+  var ranked = Object.keys(famAll).filter(function (f) { return f !== OTHER; })
+    .sort(function (a, b) { return famAll[b] - famAll[a] || (a < b ? -1 : 1); });
+  var famSlot = {};
+  ranked.forEach(function (f, i) { if (i < 8) famSlot[f] = i + 1; });
+  /* When names are hidden, each customer gets a fixed code by all-time revenue
+     (Customer 1 = largest), so the same customer has the same code everywhere. */
+  customers.forEach(function (c, i) { c.cents = custAll[i] || 0; c.i = i; });
+  customers.slice().sort(function (a, b) { return b.cents - a.cents || a.i - b.i; })
+    .forEach(function (c, k) { c.code = k + 1; });
+  return { parts: parts, customers: customers, rows: rows,
+           minN: rows.length ? minN : 0, maxN: maxN, famSlot: famSlot,
+           labels: payload.labels || {} };
+}
+
+/* Presets: From = 1st of the start month, To = last day of the end month. */
+function presetRange(name, today, model) {
+  var y = today.y, m = today.m, fy, fm, ty, tm;
+  if (name === 'ytd') { fy = y; fm = 1; ty = y; tm = m; }
+  else if (name === 'l12') { ty = y; tm = m; fm = m - 11; fy = y; if (fm < 1) { fm += 12; fy--; } }
+  else if (name === 'lq') {
+    var q = Math.floor((m - 1) / 3);            // 0..3 = current quarter
+    var py = q === 0 ? y - 1 : y, pq = q === 0 ? 3 : q - 1;
+    fy = ty = py; fm = pq * 3 + 1; tm = fm + 2;
+  }
+  else if (name === 'ly') { fy = ty = y - 1; fm = 1; tm = 12; }
+  else {
+    var a = dparts(model.minN || dnum(y, 1, 1)), b = dparts(model.maxN || dnum(y, m, 1));
+    fy = a.y; fm = a.m; ty = b.y; tm = b.m;
+  }
+  return { from: dnum(fy, fm, 1), to: dnum(ty, tm, daysIn(ty, tm)) };
+}
+var PRESETS = [['ytd','Year to date'],['l12','Last 12 months'],['lq','Last quarter'],['ly','Last year'],['all','All data']];
+
+function rank(map, total) {
+  return Object.keys(map).map(function (k) {
+    return { key: k, cents: map[k], share: total ? map[k] / total : 0 };
+  }).sort(function (a, b) { return b.cents - a.cents || (a.key < b.key ? -1 : 1); });
+}
+
+/* Everything the charts and tiles need for one date range. */
+function compute(model, fromN, toN) {
+  /* Compare like with like: if the range runs past the latest invoice,
+     the year-earlier period stops on the matching day. */
+  var effTo = (fromN <= model.maxN && toN > model.maxN) ? model.maxN : toN;
+  var pFrom = yearBack(fromN), pTo = yearBack(effTo);
+  var cur = [], total = 0, prior = 0, priorRows = 0;
+  var byMonth = {}, byMonthPrior = {}, orders = {}, nOrders = 0;
+  var fam = {}, part = {}, partQ = {}, cust = {}, unmapped = {};
+  for (var i = 0; i < model.rows.length; i++) {
+    var r = model.rows[i];
+    if (r.n >= fromN && r.n <= toN) {
+      cur.push(r);
+      total += r.a;
+      byMonth[r.ym] = (byMonth[r.ym] || 0) + r.a;
+      if (!orders[r.o]) { orders[r.o] = 1; nOrders++; }
+      var p = model.parts[r.p];
+      fam[p.fam] = (fam[p.fam] || 0) + r.a;
+      part[r.p] = (part[r.p] || 0) + r.a;
+      partQ[r.p] = (partQ[r.p] || 0) + r.q;
+      cust[r.c] = (cust[r.c] || 0) + r.a;
+      if (p.fam === OTHER) { var px = prefixOf(p.pn); unmapped[px] = (unmapped[px] || 0) + r.a; }
+    }
+    if (r.n >= pFrom && r.n <= pTo) {
+      prior += r.a; priorRows++;
+      byMonthPrior[r.ym + 100] = (byMonthPrior[r.ym + 100] || 0) + r.a;
+    }
+  }
+  var months = [], a = dparts(fromN), b = dparts(toN), y = a.y, m = a.m;
+  while (y < b.y || (y === b.y && m <= b.m)) {
+    var ym = y * 100 + m;
+    months.push({ ym: ym, cur: byMonth[ym] || 0, prior: byMonthPrior[ym] || 0 });
+    if (++m > 12) { m = 1; y++; }
+    if (months.length > 600) break;
+  }
+
+  /* Donut: at most MAX_SLICES named families, the rest folded into Other. */
+  var named = rank(fam, total).filter(function (f) { return f.key !== OTHER; });
+  var slices = named.slice(0, MAX_SLICES);
+  var rest = named.slice(MAX_SLICES), otherCents = fam[OTHER] || 0;
+  rest.forEach(function (f) { otherCents += f.cents; });
+  if (otherCents !== 0 || rest.length) {
+    slices.push({ key: OTHER, cents: otherCents, share: total ? otherCents / total : 0,
+                  folded: rest.map(function (f) { return f.key; }) });
+  }
+
+  var partRank = rank(part, total);
+  var custRank = rank(cust, total);
+  var top5 = custRank.slice(0, 5), top5Cents = 0;
+  top5.forEach(function (c) { top5Cents += c.cents; });
+
+  return {
+    from: fromN, to: toN, effTo: effTo, pFrom: pFrom, pTo: pTo,
+    rows: cur, total: total, prior: prior, hasPrior: priorRows > 0,
+    /* A fair comparison needs data going back to the start of the year-earlier period. */
+    canCompare: priorRows > 0 && prior > 0 && pFrom >= Math.floor(model.minN / 100) * 100 + 1,
+    orders: nOrders, aov: nOrders ? total / nOrders : 0,
+    months: months, slices: slices, families: rank(fam, total),
+    topParts: partRank.slice(0, 10).map(function (x) {
+      return { p: +x.key, cents: x.cents, share: x.share, units: partQ[x.key] };
+    }),
+    partCount: partRank.length,
+    top5: top5, top5Cents: top5Cents, custCount: custRank.length,
+    unmapped: rank(unmapped, total).slice(0, 12)
+  };
+}
+
+function custLabel(model, ci, showNames) {
+  var c = model.customers[ci];
+  if (!c) return '';
+  return showNames ? c.name : 'Customer ' + c.code;
+}
+function curLabel(x) {
+  if (!x.cur || x.cur === 'CAD') return 'CAD';
+  return x.cur + ' @ ' + String(Number(x.rate.toFixed(4)));
+}
+function numCmp(a, b) {
+  var x = parseFloat(a), y = parseFloat(b);
+  if (isFinite(x) && isFinite(y) && x !== y) return x - y;
+  return a < b ? -1 : a > b ? 1 : 0;
+}
+
+/* Detail table. mode 'part':    Month -> Part Number -> invoice lines
+                 mode 'invoice': Month -> Invoice Number -> part lines */
+function buildDetail(rows, model, o) {
+  o = o || {};
+  var byInv = o.mode === 'invoice', show = !!o.showNames;
+  var q = String(o.search || '').trim().toLowerCase();
+  var months = {}, all = { p: {}, i: {}, c: {} };
+  var tot = { parts: 0, invoices: 0, customers: 0, units: 0, cents: 0, lines: 0 };
+  function mark(set, k, holder, field) { if (!set[k]) { set[k] = 1; holder[field]++; } }
+  for (var i = 0; i < rows.length; i++) {
+    var r = rows[i], p = model.parts[r.p], cu = model.customers[r.c] || { no: '' };
+    if (q) {
+      /* Hidden names are not searchable, so a search can't reveal who a customer is. */
+      var hay = [p.pn, p.desc, r.o, custLabel(model, r.c, show), show ? cu.no : ''].join('\n').toLowerCase();
+      if (hay.indexOf(q) < 0) continue;
+    }
+    var M = months[r.ym] || (months[r.ym] = { ym: r.ym, groups: {}, p: {}, i: {}, c: {}, nP: 0, nI: 0, nC: 0, units: 0, cents: 0 });
+    var key = byInv ? r.o : String(r.p), G = M.groups[key];
+    if (!G) {
+      G = M.groups[key] = byInv
+        ? { key: key, o: r.o, n: r.n, c: r.c, cur: r.cur, rate: r.rate, lines: [], p: {}, nP: 0, units: 0, cents: 0 }
+        : { key: key, p: r.p, pn: p.pn, desc: p.desc, fam: p.fam, lines: [], i: {}, nI: 0, c: {}, nC: 0, units: 0, cents: 0 };
+    }
+    G.lines.push(r); G.units += r.q; G.cents += r.a;
+    if (byInv) { mark(G.p, r.p, G, 'nP'); if (r.n < G.n) G.n = r.n; }
+    else { mark(G.i, r.o, G, 'nI'); mark(G.c, r.c, G, 'nC'); }
+    M.units += r.q; M.cents += r.a;
+    mark(M.p, r.p, M, 'nP'); mark(M.i, r.o, M, 'nI'); mark(M.c, r.c, M, 'nC');
+    tot.units += r.q; tot.cents += r.a; tot.lines++;
+    mark(all.p, r.p, tot, 'parts'); mark(all.i, r.o, tot, 'invoices'); mark(all.c, r.c, tot, 'customers');
+  }
+  var cmp = byInv ? {
+    rev: function (a, b) { return b.cents - a.cents || b.n - a.n; },
+    date: function (a, b) { return b.n - a.n || numCmp(b.o, a.o); },
+    num: function (a, b) { return numCmp(a.o, b.o); },
+    cust: function (a, b) {
+      var x = custLabel(model, a.c, show), y = custLabel(model, b.c, show);
+      return numCmp(x.toLowerCase(), y.toLowerCase()) || b.n - a.n;
+    }
+  }[o.sort] : {
+    rev: function (a, b) { return b.cents - a.cents || (a.pn < b.pn ? -1 : 1); },
+    units: function (a, b) { return b.units - a.units || b.cents - a.cents; },
+    orders: function (a, b) { return b.nI - a.nI || b.cents - a.cents; },
+    az: function (a, b) { return a.pn < b.pn ? -1 : a.pn > b.pn ? 1 : 0; }
+  }[o.sort];
+  var lineCmp = byInv
+    ? function (a, b) { return b.a - a.a || (model.parts[a.p].pn < model.parts[b.p].pn ? -1 : 1); }
+    : function (a, b) { return a.n - b.n || numCmp(a.o, b.o); };
+  var list = Object.keys(months).map(function (k) {
+    var M = months[k];
+    M.list = Object.keys(M.groups).map(function (g) { return M.groups[g]; });
+    if (cmp) M.list.sort(cmp);
+    M.list.forEach(function (G) { G.lines.sort(lineCmp); });
+    return M;
+  }).sort(function (a, b) { return b.ym - a.ym; });
+  return { months: list, total: tot };
+}
+
+function csvCell(v) {
+  var s = String(v === null || v === undefined ? '' : v);
+  return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+}
+function buildCsv(rows, model, withCustomer) {
+  var L = model.labels;
+  var head = [L.order || 'Invoice Number', L.date || 'Invoice Date', L.part || 'Part Number',
+              L.desc || 'Description', 'Product Family'];
+  if (withCustomer) head.push(L.customer || 'Customer', L.custNo || 'Customer Number');
+  head.push(L.qty || 'Quantity', L.unit || 'Unit Price (CAD)', L.disc || 'Discount (%)',
+            L.amount || 'Sales Price (CAD)', 'Currency', 'Exchange Rate');
+  var out = [head.map(csvCell).join(',')];
+  rows.slice().sort(function (a, b) { return a.n - b.n || (a.o < b.o ? -1 : 1); }).forEach(function (r) {
+    var p = model.parts[r.p], d = dparts(r.n), c = model.customers[r.c] || { name: '', no: '' };
+    var line = [r.o, d.y + '-' + ('0' + d.m).slice(-2) + '-' + ('0' + d.d).slice(-2), p.pn, p.desc, p.fam];
+    if (withCustomer) line.push(c.name, c.no);
+    line.push(r.q, r.u.toFixed(2), r.disc, (r.a / 100).toFixed(2), r.cur || 'CAD', r.rate || 1);
+    out.push(line.map(csvCell).join(','));
+  });
+  return out.join('\r\n');
+}
+
+function niceTicks(max, n) {
+  if (!(max > 0)) return [0, 1];
+  var raw = max / n, mag = Math.pow(10, Math.floor(Math.log(raw) / Math.LN10)), f = raw / mag;
+  var step = (f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10) * mag;
+  var t = [], v = 0;
+  while (v < max - step * 1e-9) { v += step; t.push(v); }
+  return [0].concat(t);
+}
+/*LOGIC-END*/
+
+/* ============================================================
+   PAGE
+   ============================================================ */
+function $(id) { return document.getElementById(id); }
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, function (c) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+  });
+}
+function money(cents) { return (cents / 100).toLocaleString('en-CA', { style: 'currency', currency: 'CAD' }); }
+function money0(cents) {
+  return (cents / 100).toLocaleString('en-CA', { style: 'currency', currency: 'CAD', maximumFractionDigits: 0, minimumFractionDigits: 0 });
+}
+function compact(cents) {
+  var v = cents / 100, a = Math.abs(v);
+  if (a >= 1e6) return '$' + (v / 1e6).toFixed(a >= 1e7 ? 1 : 2).replace(/\.?0+$/, '') + 'M';
+  if (a >= 1e3) return '$' + (v / 1e3).toFixed(a >= 1e5 ? 0 : 1).replace(/\.0$/, '') + 'K';
+  return '$' + Math.round(v);
+}
+function pct(x, d) { return (x * 100).toFixed(d === undefined ? 1 : d) + '%'; }
+function num(n) { return Number(n).toLocaleString('en-CA', { maximumFractionDigits: 2 }); }
+
+var store = {
+  get: function (k) { try { return sessionStorage.getItem(k); } catch (e) { return null; } },
+  set: function (k, v) { try { sessionStorage.setItem(k, v); } catch (e) {} },
+  del: function (k) { try { sessionStorage.removeItem(k); } catch (e) {} }
+};
+var S = { token: store.get('armo_token'), model: null, from: 0, to: 0, R: null,
+          openM: {}, openP: {}, printing: false, generated: '', mode: 'part' };
+
+function api(body) {
+  return fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(body)
+  }).then(function (res) { return res.json(); });
+}
+
+/* ---------- sign in / out ---------- */
+function showLogin(msg) {
+  S.token = null; store.del('armo_token');
+  $('app').hidden = true; $('login').hidden = false;
+  $('loginErr').textContent = msg || '';
+  $('pass').value = '';
+  setTimeout(function () { ($('user').value ? $('pass') : $('user')).focus(); }, 0);
+}
+$('loginForm').addEventListener('submit', function (e) {
+  e.preventDefault();
+  var btn = $('loginBtn');
+  btn.disabled = true; btn.textContent = 'Signing in…'; $('loginErr').textContent = '';
+  api({ action: 'login', user: $('user').value, pass: $('pass').value }).then(function (r) {
+    if (r && r.ok && r.token) {
+      S.token = r.token; store.set('armo_token', r.token);
+      $('login').hidden = true; $('pass').value = '';
+      loadAll(false);
+    } else if (r && r.error === 'locked') {
+      $('loginErr').textContent = 'Too many attempts. Please try again in 15 minutes.';
+    } else {
+      $('loginErr').textContent = 'That username or password is not right.' +
+        (r && r.left !== undefined && r.left <= 3 ? ' ' + r.left + ' attempt' + (r.left === 1 ? '' : 's') + ' left.' : '');
+    }
+  }).catch(function () {
+    $('loginErr').textContent = 'Could not reach the server. Check your connection and try again.';
+  }).then(function () { btn.disabled = false; btn.textContent = 'Sign in'; });
+});
+$('logout').addEventListener('click', function () {
+  var t = S.token;
+  if (t) api({ action: 'logout', token: t }).catch(function () {});
+  S.model = null;
+  showLogin('');
+});
+
+/* ---------- load everything once ---------- */
+function loadAll(fresh) {
+  $('app').hidden = false;
+  var btn = $('refresh');
+  btn.disabled = true;
+  if (!S.model) { $('main').hidden = true; $('state').hidden = false; $('state').textContent = 'Loading sales data…'; }
+  else btn.textContent = '↻ Refreshing…';
+  api({ action: 'all', token: S.token, fresh: !!fresh }).then(function (r) {
+    if (r && r.error === 'auth') { showLogin('Your session ended. Please sign in again.'); return; }
+    if (!r || !r.ok) throw new Error((r && (r.message || r.error)) || 'No data returned');
+    var first = !S.model;
+    S.model = prepare(r);
+    S.generated = r.generated || '';
+    $('state').hidden = true; $('main').hidden = false;
+    $('asof').textContent = S.model.maxN ? 'Latest invoice ' + fmtDate(S.model.maxN) : 'No rows found';
+    buildPickers();
+    if (first) applyPreset('ytd'); else setRange(S.from, S.to);
+  }).catch(function (err) {
+    if (!S.model) { $('state').textContent = 'The data could not be loaded. ' + (err && err.message ? err.message : '') + ' Use Refresh to try again.'; }
+    else alert('Refresh failed. The page is still showing the earlier data.');
+  }).then(function () { btn.disabled = false; btn.textContent = '↻ Refresh'; });
+}
+$('refresh').addEventListener('click', function () { loadAll(true); });
+
+/* ---------- date range ---------- */
+function today() { var d = new Date(); return { y: d.getFullYear(), m: d.getMonth() + 1 }; }
+function fillSelect(sel, items, value) {
+  sel.innerHTML = items.map(function (it) {
+    return '<option value="' + it[0] + '">' + esc(it[1]) + '</option>';
+  }).join('');
+  sel.value = String(value);
+}
+function buildPickers() {
+  $('presets').innerHTML = PRESETS.map(function (p) {
+    return '<button type="button" class="chip" data-p="' + p[0] + '" aria-pressed="false">' + p[1] + '</button>';
+  }).join('');
+  var t = today();
+  var y0 = S.model.minN ? dparts(S.model.minN).y : t.y;
+  var y1 = Math.max(t.y, S.model.maxN ? dparts(S.model.maxN).y : t.y);
+  var years = [], months = MONTHS.map(function (n, i) { return [i + 1, n]; });
+  for (var y = y0; y <= y1; y++) years.push([y, String(y)]);
+  ['f', 't'].forEach(function (k) {
+    fillSelect($(k + 'm'), months, 1);
+    fillSelect($(k + 'y'), years, y1);
+  });
+}
+function fillDays(k, y, m, d) {
+  var n = daysIn(y, m), items = [];
+  for (var i = 1; i <= n; i++) items.push([i, ordinal(i)]);
+  fillSelect($(k + 'd'), items, Math.min(d, n));
+}
+function setRange(fromN, toN) {
+  if (fromN > toN) { var x = fromN; fromN = toN; toN = x; }
+  S.from = fromN; S.to = toN;
+  var a = dparts(fromN), b = dparts(toN);
+  $('fm').value = a.m; $('fy').value = a.y; fillDays('f', a.y, a.m, a.d);
+  $('tm').value = b.m; $('ty').value = b.y; fillDays('t', b.y, b.m, b.d);
+  var t = today();
+  Array.prototype.forEach.call($('presets').children, function (btn) {
+    var r = presetRange(btn.getAttribute('data-p'), t, S.model);
+    btn.setAttribute('aria-pressed', String(r.from === fromN && r.to === toN));
+  });
+  S.openM = {}; S.openP = {};
+  render();
+}
+function applyPreset(name) {
+  var r = presetRange(name, today(), S.model);
+  setRange(r.from, r.to);
+}
+function readPickers() {
+  var fy = +$('fy').value, fm = +$('fm').value, ty = +$('ty').value, tm = +$('tm').value;
+  var fd = Math.min(+$('fd').value || 1, daysIn(fy, fm)), td = Math.min(+$('td').value || 1, daysIn(ty, tm));
+  setRange(dnum(fy, fm, fd), dnum(ty, tm, td));
+}
+$('presets').addEventListener('click', function (e) {
+  var b = e.target.closest('.chip');
+  if (b) applyPreset(b.getAttribute('data-p'));
+});
+['fm', 'fd', 'fy', 'tm', 'td', 'ty'].forEach(function (id) { $(id).addEventListener('change', readPickers); });
+
+/* ---------- tooltip ---------- */
+var tip = $('tip');
+function showTip(html, e) {
+  tip.innerHTML = html; tip.hidden = false;
+  var w = tip.offsetWidth, h = tip.offsetHeight;
+  var x = e.clientX + 14, y = e.clientY + 14;
+  if (x + w > window.innerWidth - 8) x = e.clientX - w - 14;
+  if (y + h > window.innerHeight - 8) y = e.clientY - h - 14;
+  tip.style.left = Math.max(8, x) + 'px'; tip.style.top = Math.max(8, y) + 'px';
+}
+function hideTip() { tip.hidden = true; }
+function bindTips(root, getHtml) {
+  root.addEventListener('pointermove', function (e) {
+    var el = e.target.closest('[data-i]');
+    if (!el) { hideTip(); return; }
+    showTip(getHtml(+el.getAttribute('data-i')), e);
+  });
+  root.addEventListener('pointerdown', function (e) {
+    var el = e.target.closest('[data-i]');
+    if (el) showTip(getHtml(+el.getAttribute('data-i')), e);
+  });
+  root.addEventListener('pointerleave', hideTip);
+}
+window.addEventListener('scroll', hideTip, { passive: true });
+
+/* ---------- render ---------- */
+function render() {
+  if (!S.model) return;
+  S.R = compute(S.model, S.from, S.to);
+  renderTiles(); renderCharts(); renderTable();
+  var R = S.R;
+  $('printhead').textContent = 'Period: ' + fmtDate(R.from) + ' to ' + fmtDate(R.to) + ' · All amounts in CAD';
+  $('foot').textContent = 'Source: Sales Revenue sheet, invoice detail' +
+    (S.generated ? ' · Data read ' + S.generated.replace('T', ' ') : '') +
+    ' · ' + S.model.rows.length.toLocaleString('en-CA') + ' invoice lines loaded';
+  /* The charts and the table are built from the same rows; this guards it. */
+  var t = buildDetail(R.rows, S.model, { mode: 'part' }).total.cents, m = 0, f = 0;
+  R.months.forEach(function (x) { m += x.cur; });
+  R.slices.forEach(function (x) { f += x.cents; });
+  if (t !== R.total || m !== R.total || f !== R.total) console.error('Totals do not reconcile', t, m, f, R.total);
+}
+
+function renderTiles() {
+  var R = S.R, html = '';
+  var diff = R.total - R.prior, canCmp = R.canCompare;
+  var chg = canCmp ? diff / R.prior : 0;
+  var arrow = diff >= 0 ? '▲' : '▼', cls = diff >= 0 ? 'up' : 'down';
+  html += tile('Total revenue', money0(R.total), fmtDate(R.from) + ' to ' + fmtDate(R.to));
+  html += canCmp
+    ? tile('Change vs a year earlier', '<span class="' + cls + '">' + arrow + '</span> ' + pct(Math.abs(chg)),
+           (diff >= 0 ? '+' : '−') + money0(Math.abs(diff)) + ' vs ' + money0(R.prior))
+    : tile('Change vs a year earlier', '—', R.hasPrior ? 'The data does not go back far enough for a full comparison' : 'No sales recorded in the same period a year earlier');
+  html += tile('Orders', R.orders.toLocaleString('en-CA'), R.partCount.toLocaleString('en-CA') + ' different part numbers sold');
+  html += tile('Average order value', R.orders ? money0(R.aov) : '—', 'Revenue divided by orders');
+  $('tiles').innerHTML = html;
+  var note = '';
+  if (R.canCompare) note = 'Year-earlier comparison covers ' + fmtDate(R.pFrom) + ' to ' + fmtDate(R.pTo) + '.';
+  if (R.effTo !== R.to) note += ' The selected range runs past the latest invoice (' + fmtDate(R.effTo) + '), so the comparison stops on the matching day.';
+  $('cmpnote').textContent = note;
+}
+function tile(k, v, n) {
+  return '<div class="tile"><div class="k">' + k + '</div><div class="v">' + v + '</div><div class="n">' + esc(n) + '</div></div>';
+}
+
+function widthOf(el, printW) {
+  return S.printing ? printW : Math.max(260, Math.floor(el.clientWidth || 600));
+}
+function renderCharts() {
+  drawTime(); drawMix(); drawTop(); drawCust();
+}
+
+/* Revenue over time: monthly columns, lighter series = a year earlier */
+function barPath(x, y, w, h, r) {
+  r = Math.max(0, Math.min(r, w / 2, h));
+  return 'M' + x + ',' + (y + h) + 'V' + (y + r) + 'Q' + x + ',' + y + ' ' + (x + r) + ',' + y +
+         'H' + (x + w - r) + 'Q' + (x + w) + ',' + y + ' ' + (x + w) + ',' + (y + r) + 'V' + (y + h) + 'Z';
+}
+function drawTime() {
+  var R = S.R, el = $('chartTime'), mo = R.months, n = mo.length;
+  var two = R.hasPrior, best = -1, max = 0;
+  mo.forEach(function (x, i) {
+    if (best < 0 || x.cur > mo[best].cur) best = i;
+    max = Math.max(max, x.cur, two ? x.prior : 0);
+  });
+
+  var take;
+  if (!R.rows.length) take = 'No sales were invoiced in this period.';
+  else {
+    take = 'Revenue was ' + money0(R.total);
+    if (R.canCompare) {
+      var c = (R.total - R.prior) / R.prior;
+      take += ', ' + (c >= 0 ? 'up ' : 'down ') + pct(Math.abs(c)) + ' on the same period a year earlier';
+    }
+    take += n > 1 ? '; ' + monthLabel(mo[best].ym) + ' was the strongest month.' : '.';
+  }
+  $('takeTime').textContent = take;
+  $('legTime').innerHTML = two
+    ? '<span><i class="sw" style="background:var(--accent)"></i>Selected period</span>' +
+      '<span><i class="sw" style="background:var(--prior)"></i>Same months a year earlier</span>'
+    : '';
+
+  var W = widthOf(el, 700), H = S.printing ? 180 : (W < 520 ? 240 : 300);
+  var m = { t: 22, r: 6, b: 40, l: 46 }, iw = W - m.l - m.r, ih = H - m.t - m.b;
+  var ticks = niceTicks(max, 4), top = ticks[ticks.length - 1];
+  var band = iw / Math.max(1, n), gw = Math.min(band * 0.74, 64);
+  var bw = two ? Math.max(1, (gw - 2) / 2) : Math.max(1, gw);
+  var Y = function (v) { return m.t + ih - (Math.max(0, v) / top) * ih; };
+  var s = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Monthly revenue column chart">';
+  ticks.forEach(function (t) {
+    var y = Math.round(Y(t)) + 0.5;
+    s += '<line class="gridl" x1="' + m.l + '" x2="' + (W - m.r) + '" y1="' + y + '" y2="' + y + '"/>' +
+         '<text class="mut" x="' + (m.l - 8) + '" y="' + (y + 4) + '" text-anchor="end">' + compact(t) + '</text>';
+  });
+  var step = Math.max(1, Math.ceil(n / Math.max(1, Math.floor(iw / 40))));
+  var labelAll = band >= 64;
+  mo.forEach(function (x, i) {
+    var gx = m.l + band * i + (band - gw) / 2, cx = m.l + band * i + band / 2;
+    s += '<rect class="hit" data-i="' + i + '" x="' + (m.l + band * i) + '" y="' + m.t + '" width="' + band + '" height="' + ih + '"/>';
+    if (two && x.prior > 0) s += '<path class="nop" fill="var(--prior)" d="' + barPath(gx, Y(x.prior), bw, m.t + ih - Y(x.prior), 3) + '"/>';
+    var bx = two ? gx + bw + 2 : gx;
+    if (x.cur > 0) s += '<path class="nop" fill="var(--accent)" d="' + barPath(bx, Y(x.cur), bw, m.t + ih - Y(x.cur), 3) + '"/>';
+    if (x.cur > 0 && (labelAll || i === best)) {
+      /* If last year's column is taller, start the label at the bar's left edge so it stays clear of it. */
+      var beside = two && x.prior > x.cur;
+      s += '<text class="strong nop" x="' + (beside ? bx : bx + bw / 2) + '" y="' + (Y(x.cur) - 6) + '" text-anchor="' + (beside ? 'start' : 'middle') + '">' + compact(x.cur) + '</text>';
+    }
+    if (i % step === 0) {
+      var mm = x.ym % 100, yy = Math.floor(x.ym / 100);
+      s += '<text class="nop" x="' + cx + '" y="' + (m.t + ih + 16) + '" text-anchor="middle">' + MONTHS[mm - 1].slice(0, 3) + '</text>';
+      if (i === 0 || Math.floor(mo[i - step].ym / 100) !== yy) {
+        s += '<text class="mut nop" x="' + cx + '" y="' + (m.t + ih + 31) + '" text-anchor="middle">' + yy + '</text>';
+      }
+    }
+  });
+  s += '<line x1="' + m.l + '" x2="' + (W - m.r) + '" y1="' + (m.t + ih + 0.5) + '" y2="' + (m.t + ih + 0.5) + '" stroke="var(--muted)" stroke-width="1"/></svg>';
+  el.innerHTML = s;
+  if (!el._bound) {
+    el._bound = true;
+    bindTips(el, function (i) {
+      var x = S.R.months[i], h = '<b>' + monthLabel(x.ym) + '</b><br>' + money(x.cur);
+      if (S.R.hasPrior) {
+        h += '<br><span>' + monthLabel(x.ym - 100) + ': ' + money(x.prior) + '</span>';
+        if (x.prior > 0) { var c = (x.cur - x.prior) / x.prior; h += '<br><span>' + (c >= 0 ? '▲ ' : '▼ ') + pct(Math.abs(c)) + '</span>'; }
+      }
+      return h;
+    });
+  }
+}
+
+/* Revenue mix: donut by product family */
+function arc(cx, cy, R, r, a0, a1) {
+  var big = a1 - a0 > Math.PI ? 1 : 0;
+  var p = function (rad, a) { return (cx + rad * Math.sin(a)).toFixed(2) + ',' + (cy - rad * Math.cos(a)).toFixed(2); };
+  return 'M' + p(R, a0) + 'A' + R + ',' + R + ' 0 ' + big + ' 1 ' + p(R, a1) +
+         'L' + p(r, a1) + 'A' + r + ',' + r + ' 0 ' + big + ' 0 ' + p(r, a0) + 'Z';
+}
+function drawMix() {
+  var R = S.R, sl = R.slices, claimed = {};
+  sl.forEach(function (x) { var s = S.model.famSlot[x.key]; if (x.key !== OTHER && s) claimed[s] = 1; });
+  var taken = {};
+  sl.forEach(function (x) {
+    if (x.key === OTHER) { x.color = 'var(--other)'; return; }
+    var s = S.model.famSlot[x.key];
+    if (!s) { for (s = 1; s <= 8 && (claimed[s] || taken[s]); s++) {} s = Math.min(s, 8); }
+    taken[s] = 1; x.color = 'var(--s' + s + ')';
+  });
+  var named = sl.filter(function (x) { return x.key !== OTHER; });
+  $('takeMix').textContent = !named.length ? 'No product sales in this period.'
+    : named[0].key + ' made up ' + pct(named[0].share, 0) + ' of revenue' +
+      (named[1] ? ', followed by ' + named[1].key + ' at ' + pct(named[1].share, 0) + '.' : '.');
+
+  var pos = 0; sl.forEach(function (x) { pos += Math.max(0, x.cents); });
+  var s = '<svg viewBox="0 0 200 200" role="img" aria-label="Revenue by product family donut chart">', a = 0;
+  sl.forEach(function (x, i) {
+    var v = Math.max(0, x.cents); if (!v || !pos) return;
+    var a1 = a + (v / pos) * Math.PI * 2;
+    if (v / pos > 0.9995) {
+      s += '<path data-i="' + i + '" fill="' + x.color + '" d="' + arc(100, 100, 96, 60, 0, Math.PI) + arc(100, 100, 96, 60, Math.PI, Math.PI * 2) + '"/>';
+    } else {
+      s += '<path data-i="' + i + '" fill="' + x.color + '" stroke="var(--card)" stroke-width="2" stroke-linejoin="round" d="' + arc(100, 100, 96, 60, a, a1) + '"/>';
+    }
+    a = a1;
+  });
+  s += '<text class="mut" x="100" y="94" text-anchor="middle">Total</text>' +
+       '<text class="strong" x="100" y="114" text-anchor="middle" style="font-size:17px">' + compact(R.total) + '</text></svg>';
+  var el = $('chartMix'); el.innerHTML = s;
+  if (!el._bound) {
+    el._bound = true;
+    bindTips(el, function (i) {
+      var x = S.R.slices[i];
+      return '<b>' + esc(x.key) + '</b><br>' + money(x.cents) + ' · ' + pct(x.share) +
+        (x.folded && x.folded.length ? '<br><span>Includes ' + esc(x.folded.join(', ')) + ' and unmapped parts</span>' : '');
+    });
+  }
+  $('legMix').innerHTML = sl.map(function (x) {
+    return '<tr><td><i class="sw" style="background:' + x.color + '"></i>' + esc(x.key) + '</td><td class="r">' +
+           money(x.cents) + '</td><td class="r p">' + pct(x.share) + '</td></tr>';
+  }).join('');
+
+  var map = '<summary>How part numbers are grouped into families</summary><table>';
+  FAMILY_RULES.forEach(function (r) {
+    map += '<tr><td>' + esc(r[0]) + '</td><td>starts with ' + r[1].map(function (p) { return '<code>' + esc(p) + '</code>'; }).join(', ') + '</td></tr>';
+  });
+  map += '<tr><td>Other</td><td>everything else' +
+    (R.unmapped.length ? '. Largest unmapped prefixes this period: ' + R.unmapped.map(function (u) {
+      return '<code>' + esc(u.key) + '</code> ' + money0(u.cents);
+    }).join(', ') : '') + '</td></tr></table>';
+  var d = $('famMap'), wasOpen = d.open; d.innerHTML = map; d.open = wasOpen;
+}
+
+/* Top 10 part numbers: horizontal bars */
+function drawTop() {
+  var R = S.R, el = $('chartTop'), top = R.topParts, P = S.model.parts;
+  if (!top.length) { $('takeTop').textContent = 'No parts were sold in this period.'; el.innerHTML = ''; return; }
+  var sum = 0; top.forEach(function (x) { sum += x.cents; });
+  $('takeTop').textContent = P[top[0].p].pn + ' was the top seller at ' + money0(top[0].cents) + ', ' + pct(top[0].share) +
+    ' of revenue; the top ' + top.length + ' parts made up ' + pct(R.total ? sum / R.total : 0, 0) + '.';
+  var W = widthOf(el, 330), rowH = S.printing ? 24 : 36, H = top.length * rowH + 2, max = Math.max(1, top[0].cents), bh = S.printing ? 4 : 7;
+  var s = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Top part numbers by revenue bar chart">';
+  top.forEach(function (x, i) {
+    var y = i * rowH, p = P[x.p], val = money(x.cents) + ' · ' + pct(x.share);
+    var room = Math.max(0, Math.floor((W - val.length * 6.4 - p.pn.length * 7 - 24) / 5.8));
+    var d = p.desc.length > room ? (room > 8 ? p.desc.slice(0, room - 1) + '…' : '') : p.desc;
+    var w = Math.max(2, (Math.max(0, x.cents) / max) * W);
+    s += '<rect class="hit" data-i="' + i + '" x="0" y="' + y + '" width="' + W + '" height="' + rowH + '"/>' +
+      '<text class="nop" x="0" y="' + (y + 14) + '"><tspan class="strong">' + esc(p.pn) + '</tspan>' +
+      (d ? '<tspan class="mut" dx="8">' + esc(d) + '</tspan>' : '') + '</text>' +
+      '<text class="nop" x="' + W + '" y="' + (y + 14) + '" text-anchor="end">' + val + '</text>' +
+      '<rect class="nop" x="0" y="' + (y + 19) + '" width="' + W + '" height="' + bh + '" rx="' + bh / 2 + '" fill="var(--accent-soft)"/>' +
+      '<rect class="nop" x="0" y="' + (y + 19) + '" width="' + w + '" height="' + bh + '" rx="' + bh / 2 + '" fill="var(--accent)"/>';
+  });
+  el.innerHTML = s + '</svg>';
+  if (!el._bound) {
+    el._bound = true;
+    bindTips(el, function (i) {
+      var x = S.R.topParts[i], p = S.model.parts[x.p];
+      return '<b>' + esc(p.pn) + '</b><br>' + esc(p.desc) + '<br>' + money(x.cents) + ' · ' + pct(x.share) +
+             '<br><span>' + num(x.units) + ' units · ' + esc(p.fam) + '</span>';
+    });
+  }
+}
+
+/* Customer concentration: one bar, top 5 customers vs everyone else */
+function custName(i, x) {
+  return custLabel(S.model, +x.key, !$('hideNames').checked);
+}
+function drawCust() {
+  var R = S.R, el = $('chartCust'), top = R.top5;
+  if (!top.length || R.total <= 0) { $('takeCust').textContent = 'No customer sales in this period.'; el.innerHTML = ''; $('legCust').innerHTML = ''; return; }
+  var share = R.top5Cents / R.total, rest = R.total - R.top5Cents;
+  $('takeCust').textContent = 'The top ' + top.length + ' customers made up ' + pct(share, 0) + ' of revenue; the largest alone was ' +
+    pct(top[0].share, 0) + '.';
+  var segs = top.map(function (x, i) { return { name: custName(i, x), cents: x.cents, share: x.share, color: 'var(--c' + (i + 1) + ')' }; });
+  var others = Math.max(0, R.custCount - top.length);
+  if (others > 0) segs.push({ name: 'All other customers (' + others.toLocaleString('en-CA') + ')', cents: rest, share: rest / R.total, color: 'var(--other)' });
+  var W = widthOf(el, 700), H = 34, x0 = 0, pos = 0;
+  segs.forEach(function (g) { pos += Math.max(0, g.cents); });
+  var s = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Share of revenue from the top five customers">';
+  segs.forEach(function (g, i) {
+    var w = (Math.max(0, g.cents) / pos) * W;
+    if (w <= 0) return;
+    s += '<rect data-i="' + i + '" x="' + (x0 + 1) + '" y="0" width="' + Math.max(0.5, w - 2) + '" height="' + H + '" rx="4" fill="' + g.color + '"/>';
+    if (w > 46) s += '<text class="nop" x="' + (x0 + w / 2) + '" y="' + (H / 2 + 4) + '" text-anchor="middle" style="fill:' +
+      (i < 2 ? 'var(--accent-ink)' : 'var(--ink)') + ';font-weight:600">' + pct(g.share, 0) + '</text>';
+    x0 += w;
+  });
+  el.innerHTML = s + '</svg>';
+  el._segs = segs;
+  if (!el._bound) {
+    el._bound = true;
+    bindTips(el, function (i) { var g = el._segs[i]; return '<b>' + esc(g.name) + '</b><br>' + money(g.cents) + ' · ' + pct(g.share); });
+  }
+  $('legCust').innerHTML = segs.map(function (g) {
+    return '<tr><td><i class="sw" style="background:' + g.color + '"></i>' + esc(g.name) + '</td><td class="r">' +
+           money(g.cents) + '</td><td class="r p">' + pct(g.share) + '</td></tr>';
+  }).join('') + '<tr><td><b>Top ' + top.length + ' together</b></td><td class="r"><b>' + money(R.top5Cents) +
+    '</b></td><td class="r p"><b>' + pct(share) + '</b></td></tr>';
+}
+function setHidden(v) {
+  $('hideNames').checked = v; $('hideNames2').checked = v;
+  drawCust(); renderTable();
+}
+$('hideNames').addEventListener('change', function () { setHidden(this.checked); });
+$('hideNames2').addEventListener('change', function () { setHidden(this.checked); });
+
+/* ---------- detail table ---------- */
+var SORTS = {
+  part: [['rev', 'Most revenue'], ['units', 'Most units'], ['orders', 'Most invoices'], ['az', 'Part Number A–Z']],
+  invoice: [['rev', 'Largest invoice'], ['date', 'Newest first'], ['num', 'Invoice Number'], ['cust', 'Customer A–Z']]
+};
+function setMode(mode, quiet) {
+  S.mode = mode; S.openP = {};
+  Array.prototype.forEach.call($('modeSeg').children, function (b) {
+    b.setAttribute('aria-pressed', String(b.getAttribute('data-mode') === mode));
+  });
+  fillSelect($('sort'), SORTS[mode], 'rev');
+  var part = mode === 'part';
+  $('detailEyebrow').textContent = part ? 'By part number' : 'By invoice number';
+  $('takeTable').textContent = part ? 'Month, then part number, then the invoices that bought it'
+                                    : 'Month, then invoice, then the parts on it';
+  $('tableNote').textContent = (part
+    ? 'Click a month to see its parts, then a part to see every invoice that bought it.'
+    : 'Click a month to see its invoices, then an invoice to see each part on it.') +
+    ' Unit prices and amounts are in CAD; Currency shows what the invoice was billed in.';
+  if (!quiet) renderTable();
+}
+$('modeSeg').addEventListener('click', function (e) {
+  var b = e.target.closest('button[data-mode]');
+  if (b && b.getAttribute('data-mode') !== S.mode) setMode(b.getAttribute('data-mode'));
+});
+setMode('part', true);
+
+function cell(v, cls) { return '<td' + (cls ? ' class="' + cls + '"' : '') + '>' + v + '</td>'; }
+function heads(list) {
+  return '<thead><tr>' + list.map(function (x) {
+    return x.charAt(0) === '>' ? '<th class="r">' + esc(x.slice(1)) + '</th>' : '<th>' + esc(x) + '</th>';
+  }).join('') + '</tr></thead>';
+}
+function expBtn(open, label) {
+  return '<button class="exp" aria-expanded="' + open + '"><span class="chev">›</span>' + label + '</button>';
+}
+function count(n) { return Number(n).toLocaleString('en-CA'); }
+
+function renderTable() {
+  if (!S.R) return;
+  var model = S.model, L = model.labels, show = !$('hideNames').checked, part = S.mode === 'part';
+  var T = buildDetail(S.R.rows, model, { search: $('search').value, sort: $('sort').value, mode: S.mode, showNames: show });
+  var filtered = $('search').value.trim() !== '';
+  if (!T.months.length) {
+    $('table').innerHTML = '<div class="empty">' + (filtered ? 'Nothing matches that search in this period.' : 'No sales in this period.') + '</div>';
+    return;
+  }
+  var lInv = L.order || 'Invoice Number', lDate = L.date || 'Invoice Date';
+  var lCust = L.customer || 'Customer', lNo = L.custNo || 'Customer Number';
+  var custCells = function (ci) {
+    return cell(esc(custLabel(model, ci, show))) + (show ? cell(esc((model.customers[ci] || {}).no || ''), 'mu') : '');
+  };
+  var withCust = function (before, after) { return before.concat(show ? [lCust, lNo] : [lCust], after); };
+
+  var h = '<table class="dt">' + heads(['Month', '>Parts', '>Invoices', '>Customers', '>Units', '>Revenue']) + '<tbody>';
+  T.months.forEach(function (M) {
+    var open = !!S.openM[M.ym];
+    h += '<tr class="m click' + (open ? ' open' : '') + '" data-m="' + M.ym + '">' +
+      cell(expBtn(open, monthLabel(M.ym))) + cell(count(M.nP), 'r') + cell(count(M.nI), 'r') +
+      cell(count(M.nC), 'r') + cell(num(M.units), 'r') + cell(money(M.cents), 'r') + '</tr>';
+    if (!open) return;
+
+    if (part) {
+      var ph = ['Part Number', 'Description', 'Product Family', '>Units', '>Invoices', '>Customers', '>Average Unit Price', '>Revenue'];
+      var lh = withCust([lInv, lDate], ['>Quantity', '>Unit Price', '>Discount', '>Sales Price', 'Currency']);
+      h += '<tr class="sub"><td class="nest" colspan="6"><table class="dt">' + heads(ph) + '<tbody>';
+      M.list.forEach(function (G) {
+        var key = M.ym + '|' + G.key, po = !!S.openP[key];
+        h += '<tr class="click' + (po ? ' open' : '') + '" data-p="' + esc(key) + '">' +
+          cell(expBtn(po, esc(G.pn))) + cell(esc(G.desc), 'desc') + cell('<span class="tag">' + esc(G.fam) + '</span>') +
+          cell(num(G.units), 'r') + cell(count(G.nI), 'r') + cell(count(G.nC), 'r') +
+          cell(G.units ? money(G.cents / G.units) : '—', 'r') + cell(money(G.cents), 'r') + '</tr>';
+        if (!po) return;
+        h += '<tr class="sub"><td class="nest" colspan="' + ph.length + '"><table class="dt">' + heads(lh) + '<tbody>';
+        G.lines.forEach(function (r) {
+          h += '<tr>' + cell(esc(r.o)) + cell(fmtDate(r.n)) + custCells(r.c) +
+            cell(num(r.q), 'r') + cell(money(Math.round(r.u * 100)), 'r') + cell(r.disc ? num(r.disc) + '%' : '—', 'r') +
+            cell(money(r.a), 'r') + cell(esc(curLabel(r)), 'mu') + '</tr>';
+        });
+        h += '</tbody></table></td></tr>';
+      });
+    } else {
+      var ih = withCust([lInv, lDate], ['Currency', '>Parts', '>Units', '>Revenue']);
+      var rh = ['Part Number', 'Description', 'Product Family', '>Quantity', '>Unit Price', '>Discount', '>Sales Price'];
+      h += '<tr class="sub"><td class="nest" colspan="6"><table class="dt">' + heads(ih) + '<tbody>';
+      M.list.forEach(function (G) {
+        var key = M.ym + '|' + G.key, po = !!S.openP[key];
+        h += '<tr class="click' + (po ? ' open' : '') + '" data-p="' + esc(key) + '">' +
+          cell(expBtn(po, esc(G.o))) + cell(fmtDate(G.n)) + custCells(G.c) + cell(esc(curLabel(G)), 'mu') +
+          cell(count(G.nP), 'r') + cell(num(G.units), 'r') + cell(money(G.cents), 'r') + '</tr>';
+        if (!po) return;
+        h += '<tr class="sub"><td class="nest" colspan="' + ih.length + '"><table class="dt">' + heads(rh) + '<tbody>';
+        G.lines.forEach(function (r) {
+          var p = model.parts[r.p];
+          h += '<tr>' + cell(esc(p.pn)) + cell(esc(p.desc), 'desc') + cell('<span class="tag">' + esc(p.fam) + '</span>') +
+            cell(num(r.q), 'r') + cell(money(Math.round(r.u * 100)), 'r') + cell(r.disc ? num(r.disc) + '%' : '—', 'r') +
+            cell(money(r.a), 'r') + '</tr>';
+        });
+        h += '</tbody></table></td></tr>';
+      });
+    }
+    h += '</tbody></table></td></tr>';
+  });
+  h += '</tbody><tfoot><tr>' + cell('Grand total' + (filtered ? ' (search results)' : '')) +
+    cell(count(T.total.parts), 'r') + cell(count(T.total.invoices), 'r') + cell(count(T.total.customers), 'r') +
+    cell(num(T.total.units), 'r') + cell(money(T.total.cents), 'r') + '</tr></tfoot></table>';
+  $('table').innerHTML = h;
+}
+$('table').addEventListener('click', function (e) {
+  var tr = e.target.closest('tr.click');
+  if (!tr) return;
+  var m = tr.getAttribute('data-m'), p = tr.getAttribute('data-p');
+  if (m) S.openM[m] = !S.openM[m];
+  if (p) S.openP[p] = !S.openP[p];
+  renderTable();
+});
+$('expandAll').addEventListener('click', function () {
+  if (!S.R) return;
+  S.R.months.forEach(function (x) { S.openM[x.ym] = true; });
+  renderTable();
+});
+$('collapseAll').addEventListener('click', function () { S.openM = {}; S.openP = {}; renderTable(); });
+var searchTimer;
+$('search').addEventListener('input', function () { clearTimeout(searchTimer); searchTimer = setTimeout(renderTable, 120); });
+$('sort').addEventListener('change', renderTable);
+
+/* ---------- CSV, print, theme ---------- */
+$('csv').addEventListener('click', function () {
+  if (!S.R) return;
+  var csv = '﻿' + buildCsv(S.R.rows, S.model, !$('hideNames').checked);
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+  a.download = 'armodilo-sales-' + S.R.from + '-' + S.R.to + '.csv';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000);
+});
+function printMode(on) { if (S.printing === on || !S.R) return; S.printing = on; renderCharts(); }
+window.addEventListener('beforeprint', function () { printMode(true); });
+window.addEventListener('afterprint', function () { printMode(false); });
+$('print').addEventListener('click', function () { printMode(true); window.print(); setTimeout(function () { printMode(false); }, 500); });
+
+var resizeTimer;
+window.addEventListener('resize', function () {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(function () { if (S.R && !S.printing) renderCharts(); }, 150);
+});
+
+function currentTheme() {
+  var t = document.documentElement.getAttribute('data-theme');
+  if (t) return t;
+  return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+function setTheme(t, save) {
+  document.documentElement.setAttribute('data-theme', t);
+  $('theme').textContent = t === 'dark' ? 'Light' : 'Dark';
+  if (save) { try { localStorage.setItem('armo_theme', t); } catch (e) {} }
+}
+(function () {
+  var saved = null;
+  try { saved = localStorage.getItem('armo_theme'); } catch (e) {}
+  if (saved === 'dark' || saved === 'light') setTheme(saved, false);
+  else $('theme').textContent = currentTheme() === 'dark' ? 'Light' : 'Dark';
+})();
+$('theme').addEventListener('click', function () { setTheme(currentTheme() === 'dark' ? 'light' : 'dark', true); });
+
+/* ---------- start ---------- */
+if (S.token) loadAll(false); else showLogin('');
+</script>
+</body>
+</html>

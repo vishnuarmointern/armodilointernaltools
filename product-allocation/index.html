@@ -1,0 +1,1522 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src https://script.google.com https://script.googleusercontent.com; form-action 'none'; base-uri 'none'">
+<title>Product Allocation</title>
+<script>try { var t = localStorage.getItem('pa_theme'); if (t === 'dark' || t === 'light') document.documentElement.setAttribute('data-theme', t); } catch (e) {}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f6f8; --card: #ffffff; --ink: #0f172a; --ink-2: #334155; --muted: #64748b; --faint: #94a3b8;
+    --line: #e5e8ee; --line-2: #eef0f4; --row: #f8fafc; --hover: #f3f5f8;
+    --accent: #0f172a; --on-accent: #ffffff; --focus: #2563eb;
+    --painted: #2563eb; --painted-ink: #1d4ed8; --painted-soft: #eef3ff;
+    --raw: #d03b3b; --raw-ink: #b42323; --raw-soft: #fdf0f0;
+    --s-full: #0ca30c; --s-full-ink: #0b7a17; --s-full-soft: #e9f8ec;
+    --s-raw: #fab219; --s-raw-ink: #925d00; --s-raw-soft: #fff6e1;
+    --s-miss: #d03b3b; --s-miss-ink: #b42323; --s-miss-soft: #fdeeee;
+    --s-open: #a3a9b3; --s-open-ink: #5b6472; --s-open-soft: #f1f3f6;
+    --money: #0b7a17; --track: #edf0f4;
+    --shadow-sm: 0 1px 2px rgba(15,23,42,.04);
+    --shadow: 0 1px 2px rgba(15,23,42,.04), 0 2px 8px rgba(15,23,42,.04);
+    --shadow-lg: 0 12px 32px rgba(15,23,42,.16);
+    --font: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    --r: 14px;
+  }
+  /* Dark theme: follows the device unless the moon/sun button picks one */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --bg: #0d1016; --card: #151922; --ink: #e8ecf2; --ink-2: #c3cad5; --muted: #8b95a5; --faint: #667085;
+            --line: #262c38; --line-2: #1f2430; --row: #181d27; --hover: #1c2230;
+            --accent: #e8ecf2; --on-accent: #0d1016; --focus: #7aa2ff;
+            --painted: #4f86f7; --painted-ink: #8fb2ff; --painted-soft: #172340;
+            --raw: #e85858; --raw-ink: #ff9a9a; --raw-soft: #361b1f;
+            --s-full-ink: #5fd38a; --s-full-soft: #12301d; --s-raw-ink: #f5c35a; --s-raw-soft: #33280f;
+            --s-miss-ink: #ff8f8f; --s-miss-soft: #371a1d; --s-open: #5d6470; --s-open-ink: #a5aebb; --s-open-soft: #222834;
+            --money: #5fd38a; --track: #232a36;
+            --shadow-sm: none; --shadow: 0 0 0 1px rgba(255,255,255,.02); --shadow-lg: 0 12px 32px rgba(0,0,0,.5); color-scheme: dark; }
+  }
+  :root[data-theme="dark"] { --bg: #0d1016; --card: #151922; --ink: #e8ecf2; --ink-2: #c3cad5; --muted: #8b95a5; --faint: #667085;
+            --line: #262c38; --line-2: #1f2430; --row: #181d27; --hover: #1c2230;
+            --accent: #e8ecf2; --on-accent: #0d1016; --focus: #7aa2ff;
+            --painted: #4f86f7; --painted-ink: #8fb2ff; --painted-soft: #172340;
+            --raw: #e85858; --raw-ink: #ff9a9a; --raw-soft: #361b1f;
+            --s-full-ink: #5fd38a; --s-full-soft: #12301d; --s-raw-ink: #f5c35a; --s-raw-soft: #33280f;
+            --s-miss-ink: #ff8f8f; --s-miss-soft: #371a1d; --s-open: #5d6470; --s-open-ink: #a5aebb; --s-open-soft: #222834;
+            --money: #5fd38a; --track: #232a36;
+            --shadow-sm: none; --shadow: 0 0 0 1px rgba(255,255,255,.02); --shadow-lg: 0 12px 32px rgba(0,0,0,.5); color-scheme: dark; }
+  :root[data-theme="light"] { color-scheme: light; }
+  * { box-sizing: border-box; }
+  html { scroll-padding-top: 90px; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.5 var(--font); -webkit-font-smoothing: antialiased; }
+  .hidden { display: none !important; }
+  button { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 6px; }
+  .mono { font-family: var(--mono); letter-spacing: -.01em; }
+
+  /* ============ Login ============ */
+  #login { min-height: 100vh; display: grid; place-items: center; padding: 16px;
+           background: radial-gradient(1200px 600px at 50% -10%, color-mix(in srgb, var(--painted) 10%, transparent), transparent), var(--bg); }
+  .login-card { width: 100%; max-width: 380px; background: var(--card); border: 1px solid var(--line);
+                border-radius: 18px; padding: 32px; box-shadow: var(--shadow-lg); }
+  .logo { width: 44px; height: 44px; border-radius: 12px; background: var(--accent); color: var(--on-accent);
+          display: grid; place-items: center; margin-bottom: 18px; }
+  .login-card h1 { font-size: 22px; margin: 0 0 4px; letter-spacing: -.02em; }
+  .sub { color: var(--muted); margin: 0 0 22px; font-size: 14px; }
+  label { display: block; font-size: 12.5px; font-weight: 600; margin: 14px 0 6px; color: var(--ink-2); }
+  input { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px;
+          background: var(--card); color: var(--ink); font: inherit; transition: border-color .15s, box-shadow .15s; }
+  input:focus { outline: none; border-color: var(--focus); box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus) 18%, transparent); }
+  .btn { width: 100%; margin-top: 20px; padding: 11px; border: 0; border-radius: 10px; background: var(--accent);
+         color: var(--on-accent); font-weight: 600; cursor: pointer; }
+  .btn:disabled { opacity: .6; cursor: wait; }
+  .err { color: var(--s-miss-ink); font-size: 13px; min-height: 18px; margin-top: 10px; }
+
+  /* ============ Top bar ============ */
+  header { position: sticky; top: 0; z-index: 20; background: color-mix(in srgb, var(--bg) 82%, transparent);
+           backdrop-filter: saturate(1.6) blur(12px); -webkit-backdrop-filter: saturate(1.6) blur(12px); border-bottom: 1px solid var(--line); }
+  .bar { max-width: 1180px; margin: 0 auto; padding: 10px 20px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px; }
+  .brand { display: flex; align-items: center; gap: 11px; min-width: 0; }
+  .brand .logo { width: 32px; height: 32px; border-radius: 9px; margin: 0; flex: none; }
+  .brand b { font-size: 15px; letter-spacing: -.01em; display: block; line-height: 1.2; }
+  .sync { color: var(--muted); font-size: 12px; display: flex; align-items: center; gap: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--s-full); box-shadow: 0 0 0 3px color-mix(in srgb, var(--s-full) 20%, transparent); flex: none; }
+  .dot.stale { background: var(--s-raw); box-shadow: 0 0 0 3px color-mix(in srgb, var(--s-raw) 25%, transparent); }
+  #saveState.bad { color: var(--s-miss-ink); }
+  .tabs { display: inline-flex; background: var(--track); border-radius: 11px; padding: 3px; gap: 2px; }
+  .tab { border: 0; background: none; color: var(--muted); padding: 7px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 13.5px;
+         display: inline-flex; align-items: center; gap: 7px; transition: color .15s, background .15s; }
+  .tab:hover { color: var(--ink); }
+  .tab[aria-selected="true"] { background: var(--card); color: var(--ink); box-shadow: 0 1px 3px rgba(15,23,42,.12); }
+  .tab .badge.urgent { background: var(--s-miss); color: #fff; }
+  .tab .badge.urgent.zero { background: var(--line); color: var(--ink-2); }
+  .tab .badge { font-size: 11px; font-weight: 600; background: var(--line); color: var(--ink-2); border-radius: 99px; padding: 0 7px; line-height: 18px; }
+  .actions { display: flex; gap: 8px; justify-content: flex-end; }
+  .b { background: var(--card); border: 1px solid var(--line); color: var(--ink); border-radius: 9px; height: 34px;
+       padding: 0 13px; font-size: 13px; cursor: pointer; font-weight: 500; display: inline-flex; align-items: center; gap: 7px;
+       transition: border-color .15s, background .15s; box-shadow: var(--shadow-sm); }
+  .b:hover { border-color: var(--faint); }
+  .b.primary { background: var(--accent); color: var(--on-accent); border-color: var(--accent); font-weight: 600; }
+  .b.primary:hover { opacity: .92; }
+  .b.icon { width: 34px; padding: 0; justify-content: center; }
+  .b:disabled { opacity: .6; cursor: wait; }
+  .b svg { flex: none; }
+
+  main { max-width: 1180px; margin: 0 auto; padding: 22px 20px 80px; }
+  .pagehead { margin-bottom: 16px; }
+  .pagehead h2 { margin: 0; font-size: 22px; letter-spacing: -.02em; }
+  .pagehead p { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
+
+  /* ============ KPI tiles ============ */
+  .kpis { display: grid; grid-template-columns: 1.25fr repeat(4, 1fr) 1.25fr; gap: 10px; margin-bottom: 18px; }
+  .kpi { background: var(--card); border: 1px solid var(--line); border-radius: var(--r); padding: 13px 15px 14px; box-shadow: var(--shadow);
+         text-align: left; position: relative; min-width: 0; }
+  button.kpi { cursor: pointer; transition: border-color .15s; }
+  button.kpi:hover { border-color: var(--faint); }
+  button.kpi[aria-pressed="true"] { border-color: var(--ink); box-shadow: 0 0 0 1px var(--ink), var(--shadow); }
+  .kpi .k { font-size: 12px; color: var(--muted); font-weight: 500; display: flex; align-items: center; gap: 7px; white-space: nowrap; }
+  .kpi .v { font-size: 26px; font-weight: 650; letter-spacing: -.02em; margin-top: 3px; line-height: 1.15; font-variant-numeric: tabular-nums; }
+  .kpi .s { font-size: 12px; color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .kpi .v.money { color: var(--money); }
+  .kpi .meter { margin-top: 9px; }
+  .sdot { width: 8px; height: 8px; border-radius: 3px; flex: none; display: inline-block; }
+  .sdot.full { background: var(--s-full); } .sdot.raw { background: var(--s-raw); } .sdot.missing { background: var(--s-miss); } .sdot.open { background: var(--s-open); }
+
+  /* ============ Toolbar ============ */
+  .toolbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 14px; }
+  .searchbox { position: relative; flex: 1 1 320px; }
+  .searchbox svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--faint); pointer-events: none; }
+  .searchbox input { padding-left: 36px; height: 38px; box-shadow: var(--shadow-sm); }
+  .kbd { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-size: 11px; color: var(--faint);
+         border: 1px solid var(--line); border-radius: 5px; padding: 0 5px; line-height: 17px; pointer-events: none; }
+  select { height: 38px; border: 1px solid var(--line); border-radius: 10px; background-color: var(--card); color: var(--ink);
+           font: inherit; font-size: 13px; padding: 0 30px 0 11px; box-shadow: var(--shadow-sm); cursor: pointer;
+           appearance: none; background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+           background-position: calc(100% - 15px) 16px, calc(100% - 10px) 16px; background-size: 5px 5px; background-repeat: no-repeat; }
+  .legend { display: flex; gap: 6px 14px; flex-wrap: wrap; font-size: 12px; color: var(--muted); align-items: center; }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .sw { width: 10px; height: 10px; border-radius: 3px; display: inline-block; flex: none; }
+  .sw.painted { background: var(--painted); } .sw.raw { background: var(--raw); } .sw.left { background: var(--track); border: 1px solid var(--line); }
+  .count { color: var(--muted); font-size: 12.5px; margin: 0 0 10px; display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; min-height: 26px; }
+  #salesWarn { margin: 0 0 12px; min-height: 0; background: var(--s-miss-soft); border-radius: 10px; padding: 9px 12px; }
+  #salesWarn:empty { display: none; }
+
+  .confirm { display: flex; gap: 12px 20px; align-items: center; justify-content: space-between; flex-wrap: wrap;
+             background: var(--card); border: 1px solid var(--line); border-radius: var(--r); padding: 16px 18px; margin-bottom: 16px; box-shadow: var(--shadow-lg); }
+  .confirm .ic { width: 36px; height: 36px; border-radius: 10px; background: var(--painted-soft); color: var(--painted-ink); display: grid; place-items: center; flex: none; }
+  .confirm .txt { display: flex; gap: 14px; align-items: flex-start; flex: 1 1 420px; }
+  .confirm p { margin: 3px 0 0; color: var(--muted); font-size: 13px; }
+  .confirm-actions { display: flex; gap: 8px; }
+
+  /* ============ Status chips ============ */
+  .st { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; padding: 2px 9px 2px 7px;
+        border-radius: 99px; white-space: nowrap; line-height: 18px; }
+  .st::before { content: ""; width: 7px; height: 7px; border-radius: 50%; flex: none; }
+  .st.full { color: var(--s-full-ink); background: var(--s-full-soft); } .st.full::before { background: var(--s-full); }
+  .st.raw { color: var(--s-raw-ink); background: var(--s-raw-soft); } .st.raw::before { background: var(--s-raw); }
+  .st.missing { color: var(--s-miss-ink); background: var(--s-miss-soft); } .st.missing::before { background: var(--s-miss); }
+  .st.open, .st.na { color: var(--s-open-ink); background: var(--s-open-soft); } .st.open::before, .st.na::before { background: var(--s-open); }
+
+  /* ============ Meters ============ */
+  .meter { display: flex; gap: 2px; height: 6px; border-radius: 99px; overflow: hidden; background: var(--track); min-width: 60px; }
+  .meter > i { display: block; height: 100%; background: var(--track); }
+  .meter .painted { background: var(--painted); } .meter .raw { background: var(--raw); }
+  .meter .full { background: var(--s-full); } .meter .sraw { background: var(--s-raw); } .meter .missing { background: var(--s-miss); } .meter .open { background: var(--s-open); }
+  .meter.thick { height: 8px; }
+  .cov { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+  .cov .lbl { display: flex; justify-content: space-between; gap: 8px; font-size: 11.5px; color: var(--muted); white-space: nowrap; }
+  .cov .lbl b { color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+  /* ============ Components page ============ */
+  summary { list-style: none; cursor: pointer; }
+  summary::-webkit-details-marker { display: none; }
+  .chev { width: 22px; height: 22px; border-radius: 6px; display: grid; place-items: center; color: var(--faint); flex: none; transition: transform .18s, background .15s; }
+  details[open] > summary > .chev { transform: rotate(90deg); color: var(--ink); }
+  summary:hover > .chev { background: var(--hover); }
+
+  .part-card { background: var(--card); border: 1px solid var(--line); border-radius: var(--r); margin-bottom: 10px; box-shadow: var(--shadow); transition: border-color .15s; }
+  .part-card:hover, .part-card[open] { border-color: color-mix(in srgb, var(--faint) 60%, var(--line)); }
+  .part-card > summary { display: grid; grid-template-columns: 22px minmax(200px, 1.6fr) minmax(190px, 1.2fr) minmax(150px, .9fr) auto; gap: 18px; align-items: center; padding: 16px 18px; border-radius: var(--r); }
+  .pname { min-width: 0; }
+  .pname .t { font-family: var(--mono); font-weight: 600; font-size: 14.5px; letter-spacing: -.01em; word-break: break-word; }
+  .pname .d { color: var(--muted); font-size: 12.5px; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tag { display: inline-block; font-size: 10.5px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--painted-ink);
+         background: var(--painted-soft); border-radius: 5px; padding: 0 6px; margin-left: 8px; vertical-align: 2px; font-family: var(--font); }
+  .pstat { display: flex; flex-direction: column; gap: 7px; min-width: 0; }
+  .pstat .counts { display: flex; flex-wrap: wrap; gap: 4px 10px; font-size: 12px; color: var(--muted); }
+  .pstat .counts span { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
+  .pstat .counts b { color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; }
+  .vall { display: inline-flex; align-items: center; gap: 6px; background: var(--card); color: var(--ink);
+          border: 1px solid var(--line); border-radius: 8px; height: 30px; padding: 0 11px; font-size: 12.5px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+  .vall:hover { border-color: var(--faint); }
+  .vall[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+  .vall .n { font-weight: 500; opacity: .65; font-variant-numeric: tabular-nums; }
+  .part-body { padding: 0 18px 18px 58px; }
+  .section-label { font-size: 11px; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); font-weight: 600; margin: 4px 0 8px; }
+
+  .comp { border: 1px solid var(--line); border-radius: 12px; margin-bottom: 8px; background: var(--card); }
+  .comp > summary { display: grid; grid-template-columns: 22px minmax(0, 1fr) minmax(140px, 220px); gap: 14px; align-items: center; padding: 11px 14px; border-radius: 12px; }
+  .comp > summary:hover, .kit > summary:hover { background: var(--hover); }
+  .comp .t, .kit .t { font-family: var(--mono); font-weight: 600; font-size: 13.5px; }
+  .comp .d, .kit .d { color: var(--muted); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .lvl { font-size: 10px; text-transform: uppercase; letter-spacing: .08em; color: var(--faint); font-weight: 600; font-family: var(--font); margin-right: 8px; }
+  .comp-body { padding: 2px 14px 14px 50px; }
+  .kit { border: 1px solid var(--line-2); border-radius: 10px; background: var(--row); margin-top: 8px; }
+  .kit > summary { display: grid; grid-template-columns: 22px minmax(0, 1fr) auto minmax(130px, 200px); gap: 14px; align-items: center; padding: 10px 12px; border-radius: 10px; }
+  .kit-body { padding: 0 12px 12px; }
+  .kit.flat > .krow { display: grid; grid-template-columns: 22px minmax(0, 1fr) auto minmax(130px, 200px); gap: 14px; align-items: center; padding: 10px 12px; }
+  .chev.blank { visibility: hidden; }
+  .swatch { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--ink-2); border: 1px solid var(--line);
+            background: var(--card); border-radius: 99px; padding: 1px 9px 1px 4px; font-weight: 500; margin-left: 8px; vertical-align: 1px; font-family: var(--font); }
+  .swatch i { width: 12px; height: 12px; border-radius: 50%; border: 1px solid rgba(0,0,0,.18); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .swatch i { border-color: rgba(255,255,255,.35); } }
+  :root[data-theme="dark"] .swatch i { border-color: rgba(255,255,255,.35); }
+  #themeBtn .sun { display: none; } .is-dark #themeBtn .sun { display: block; } .is-dark #themeBtn .moon { display: none; }
+  .stock { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+  .stock span { font-size: 11.5px; border-radius: 6px; padding: 2px 7px; font-weight: 600; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .stock .p { background: var(--painted-soft); color: var(--painted-ink); }
+  .stock .r { background: var(--raw-soft); color: var(--raw-ink); }
+
+  .allorders { border: 1px solid var(--line); border-radius: 12px; padding: 12px 12px 4px; margin: 0 0 14px; background: var(--row); }
+  .allorders-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin: 0 2px 8px; font-size: 13px; flex-wrap: wrap; }
+
+  /* ============ Tables ============ */
+  .tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--card); }
+  table { width: 100%; border-collapse: separate; border-spacing: 0; }
+  .ktable { min-width: 840px; }
+  th, td { padding: 9px 12px; text-align: left; border-bottom: 1px solid var(--line-2); white-space: nowrap; font-variant-numeric: tabular-nums; vertical-align: middle; }
+  th { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); background: var(--row); font-weight: 600; }
+  th.num, td.num { text-align: right; } th.c, td.c { text-align: center; }
+  th.painted { color: var(--painted-ink); } th.raw { color: var(--raw-ink); }
+  th.money, td.money { color: var(--money); } td.money { font-weight: 600; }
+  th.cost, td.cost { color: var(--muted); }
+  .pc { color: var(--painted-ink); font-weight: 600; } .rc { color: var(--raw-ink); font-weight: 600; }
+  tbody tr:last-child > td { border-bottom: 0; }
+  tbody tr:not(.detail):not(.grp):hover > td { background: var(--hover); }
+  tfoot td { font-weight: 650; background: var(--row); border-top: 1px solid var(--line); border-bottom: 0; }
+  .na, .zero { color: var(--faint); font-weight: 400; }
+
+  .step { display: inline-flex; align-items: center; border: 1px solid var(--line); border-radius: 9px; overflow: hidden; background: var(--card); }
+  .step button { width: 28px; height: 28px; border: 0; font-size: 16px; line-height: 1; cursor: pointer; background: transparent; color: var(--muted); transition: background .12s, color .12s; }
+  .step.painted button:hover:not(:disabled) { background: var(--painted-soft); color: var(--painted-ink); }
+  .step.raw button:hover:not(:disabled) { background: var(--raw-soft); color: var(--raw-ink); }
+  .step button:disabled { opacity: .3; cursor: not-allowed; }
+  .step input { width: 44px; height: 28px; border: 0; border-left: 1px solid var(--line-2); border-right: 1px solid var(--line-2); border-radius: 0;
+                padding: 0 4px; text-align: center; background: transparent; font-weight: 650; -moz-appearance: textfield; font-variant-numeric: tabular-nums; }
+  .step.painted { box-shadow: inset 3px 0 0 var(--painted); } .step.raw { box-shadow: inset 3px 0 0 var(--raw); }
+  .step.painted input { color: var(--painted-ink); } .step.raw input { color: var(--raw-ink); }
+  .step.has.painted { background: var(--painted-soft); border-color: color-mix(in srgb, var(--painted) 35%, var(--line)); }
+  .step.has.raw { background: var(--raw-soft); border-color: color-mix(in srgb, var(--raw) 35%, var(--line)); }
+  .step input::-webkit-outer-spin-button, .step input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .step input:focus { outline: none; box-shadow: inset 0 0 0 2px var(--focus); }
+
+  .pools { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 10px; margin: 2px 0 10px; }
+  .pool { border-radius: 10px; padding: 12px 14px; font-size: 12.5px; border: 1px solid var(--line); background: var(--card); }
+  .pool h4 { margin: 0 0 8px; font-size: 12.5px; display: flex; align-items: center; gap: 8px; font-weight: 600; }
+  .pool .meter { margin: 0 0 9px; }
+  .pool dl { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px 12px; margin: 0; }
+  .pool dt { color: var(--muted); font-size: 11.5px; } .pool dd { margin: 0; font-weight: 650; font-variant-numeric: tabular-nums; font-size: 15px; }
+  .pool .note { margin-top: 8px; color: var(--muted); font-size: 12px; }
+  .pool .warn { margin-top: 8px; color: var(--s-miss-ink); font-weight: 600; font-size: 12px; }
+
+  .otog { display: inline-flex; align-items: center; gap: 9px; background: none; border: 0; padding: 0; color: var(--ink); cursor: pointer; text-align: left; }
+  .otog .chev { width: 18px; height: 18px; }
+  .otog[aria-expanded="true"] .chev { transform: rotate(90deg); color: var(--ink); }
+  .otog b { font-family: var(--mono); font-weight: 600; font-size: 13px; }
+  .otog small { display: block; font-weight: 400; color: var(--muted); font-size: 11.5px; max-width: 220px; overflow: hidden; text-overflow: ellipsis; }
+  tr.detail > td { background: var(--row); padding: 14px; white-space: normal; }
+  .dwrap { width: 0; min-width: 100%; }
+
+  /* ============ Order view ============ */
+  .ofacts { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; margin-bottom: 12px; }
+  .fact { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 9px 12px; min-width: 0; }
+  .fact .k { font-size: 10.5px; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; font-weight: 600; }
+  .fact .v { font-size: 14.5px; font-weight: 650; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-variant-numeric: tabular-nums; }
+  .fact .v.money { color: var(--money); }
+  .fact.wide { grid-column: span 2; }
+  .fact .meter { margin-top: 6px; }
+  .otable { min-width: 900px; }
+  .stcell { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; }
+  .eta { display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; font-weight: 500; color: var(--ink-2); white-space: nowrap; }
+  .eta svg { flex: none; opacity: .8; }
+  .eta.date { color: var(--painted-ink); }
+  .eta.stock, .eta.now { color: var(--s-full-ink); }
+  .eta.late { color: var(--s-raw-ink); }
+  .eta.none { color: var(--s-miss-ink); }
+  .fact .v.good { color: var(--s-full-ink); } .fact .v.bad { color: var(--s-miss-ink); }
+  .fact .sub { font-size: 11.5px; color: var(--muted); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .incoming { margin-top: 10px; padding-top: 9px; border-top: 1px dashed var(--line); }
+  .incoming .ih { display: flex; align-items: center; gap: 6px; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 600; margin-bottom: 4px; }
+  .incoming ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 2px; font-size: 12.5px; color: var(--ink-2); }
+  .incoming b { color: var(--ink); font-variant-numeric: tabular-nums; }
+  .incoming .late { color: var(--s-raw-ink); font-weight: 600; }
+  .stock .in { background: var(--track); color: var(--ink-2); }
+  .otable th, .otable td { padding: 8px 11px; font-size: 13px; }
+  .otable tr.grp > td { background: var(--row); border-top: 1px solid var(--line); vertical-align: top; padding-top: 11px; padding-bottom: 11px; }
+  .otable tbody tr.grp:first-child > td { border-top: 0; }
+  .otable .pn { font-family: var(--mono); font-weight: 600; font-size: 13.5px; }
+  .otable tr.grp .d { color: var(--muted); font-size: 11.5px; font-weight: 400; }
+  .otable .u { color: var(--muted); font-size: 11px; font-weight: 400; display: block; }
+  .otable tr.sub > td:nth-child(2) { padding-left: 28px; position: relative; }
+  .otable tr.sub > td:nth-child(2)::before { content: ""; position: absolute; left: 13px; top: 0; height: 50%; width: 9px; border-left: 1px solid var(--line); border-bottom: 1px solid var(--line); border-bottom-left-radius: 5px; }
+  .otable tr.me > td { background: color-mix(in srgb, var(--painted-soft) 80%, transparent); }
+  .otable td.kitc { color: var(--ink-2); font-family: var(--mono); font-size: 12.5px; }
+  .go { background: none; border: 0; padding: 0; color: var(--ink); cursor: pointer; text-align: left; font-family: var(--mono); font-weight: 600; font-size: 12.5px;
+        text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 3px; }
+  .go:hover { color: var(--painted-ink); text-decoration-color: currentColor; }
+  .me-tag { font-family: var(--font); font-size: 10.5px; font-weight: 600; color: var(--painted-ink); background: var(--painted-soft); border-radius: 5px; padding: 1px 6px; margin-left: 6px; }
+  details.extras { margin-top: 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); }
+  details.extras > summary { display: flex; align-items: center; gap: 10px; padding: 10px 12px; font-size: 13px; border-radius: 10px; }
+  details.extras > summary:hover { background: var(--hover); }
+  details.extras > summary .grow { flex: 1; min-width: 0; }
+  details.extras .xin { padding: 0 10px 10px; }
+  .xtable { min-width: 640px; }
+  .utable { min-width: 860px; }
+  .ptable { min-width: 1120px; }
+  .ptable .ochips { min-width: 190px; }
+  #ptype { min-width: 170px; }
+  .utable td { vertical-align: top; padding-top: 11px; padding-bottom: 11px; }
+  .utable .upart { font-family: var(--mono); font-weight: 600; font-size: 13px; }
+  .utable .d { color: var(--muted); font-size: 12px; white-space: normal; max-width: 280px; }
+  .utype { font-size: 11.5px; color: var(--ink-2); background: var(--track); border-radius: 6px; padding: 2px 7px; font-weight: 500; }
+  .ushort { color: var(--s-miss-ink); font-size: 15px; }
+  .utable .why { color: var(--muted); font-size: 12.5px; white-space: normal; max-width: 200px; }
+  .utable .used { color: var(--muted); font-family: var(--mono); font-size: 12px; white-space: normal; max-width: 220px; }
+  .ochips { display: flex; flex-wrap: wrap; gap: 4px; max-width: 260px; }
+  .ochip { font-family: var(--mono); font-size: 12px; font-weight: 600; border: 1px solid var(--line); background: var(--card); color: var(--ink);
+           border-radius: 6px; padding: 1px 7px; cursor: pointer; }
+  .ochip:hover { border-color: var(--painted); color: var(--painted-ink); }
+  .ochips .more { font-size: 12px; color: var(--muted); align-self: center; }
+  details.alsoshort { margin-top: 16px; }
+  .ostat .st.na + .eta { display: none; }
+  .xtable th, .xtable td { padding: 7px 10px; font-size: 13px; }
+  .money { color: var(--money); }
+  .xtable td.item { font-family: var(--mono); font-weight: 600; font-size: 12.5px; }
+  tr.flash > td, .krow.flash { animation: flash 2.4s ease-out; }
+  @keyframes flash { 0%, 45% { background: var(--s-raw-soft); } 100% { background: transparent; } }
+
+  /* ============ Order cards ============ */
+  .ocard { background: var(--card); border: 1px solid var(--line); border-radius: var(--r); margin-bottom: 8px; box-shadow: var(--shadow); }
+  .ocard:hover, .ocard[open] { border-color: color-mix(in srgb, var(--faint) 60%, var(--line)); }
+  .ocard > summary { display: grid; grid-template-columns: 22px 120px minmax(0, 1.3fr) minmax(140px, 1fr) 170px 120px; gap: 16px; align-items: center; padding: 13px 16px; border-radius: var(--r); }
+  .ocard .onum { font-family: var(--mono); font-size: 15px; font-weight: 600; }
+  .ocard .odate { color: var(--muted); font-size: 12px; }
+  .ocard .ocust { font-weight: 600; font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ocard .oparts { color: var(--muted); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: var(--mono); }
+  .ocard .ostat { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
+  .ocard .oval { text-align: right; font-weight: 650; color: var(--money); font-variant-numeric: tabular-nums; }
+  .ocard .oval small { display: block; color: var(--muted); font-weight: 400; font-size: 11px; }
+  .ocard-body { padding: 0 16px 16px 54px; }
+  .allorders .ocard { box-shadow: none; }
+
+  .empty { color: var(--muted); text-align: center; padding: 56px 0; border: 1px dashed var(--line); border-radius: var(--r); background: var(--card); }
+  .skeleton { height: 74px; border-radius: var(--r); margin-bottom: 10px; background: linear-gradient(90deg, var(--card), var(--hover), var(--card)); background-size: 200% 100%; animation: sk 1.2s infinite linear; border: 1px solid var(--line); }
+  @keyframes sk { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+  #toast { position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%); background: var(--accent); color: var(--on-accent);
+           padding: 10px 12px 10px 16px; border-radius: 12px; font-size: 13.5px; max-width: calc(100% - 32px); z-index: 30;
+           display: flex; align-items: center; gap: 14px; box-shadow: var(--shadow-lg); }
+  #toast button { background: color-mix(in srgb, var(--on-accent) 14%, transparent); border: 0; color: inherit; border-radius: 8px; padding: 5px 11px; font-weight: 600; cursor: pointer; }
+
+  @media (max-width: 1020px) {
+    .kpis { grid-template-columns: repeat(3, 1fr); }
+    .part-card > summary { grid-template-columns: 22px minmax(0, 1fr) minmax(150px, 220px) auto; }
+    .part-card > summary .pcov { display: none; }
+    .ocard > summary { grid-template-columns: 22px 110px minmax(0, 1fr) 130px 110px; }
+    .ocard > summary .ocovw { display: none; }
+  }
+  @media (max-width: 700px) {
+    .bar { grid-template-columns: 1fr auto; padding: 10px 14px; }
+    .tabs { grid-column: 1 / -1; order: 3; width: 100%; overflow-x: auto; scrollbar-width: none; } .tab { flex: 1 0 auto; justify-content: center; padding: 7px 12px; }
+    .b.lbl span { display: none; } .b.lbl { width: 34px; padding: 0; justify-content: center; }
+    main { padding: 16px 14px 80px; }
+    .kpis { grid-template-columns: repeat(2, 1fr); }
+    .kpis > :first-child, .kpis > :last-child { grid-column: 1 / -1; }
+    .fact.wide { grid-column: auto; }
+    .kpi .v { font-size: 22px; }
+    .kbd { display: none; }
+    .part-card > summary { grid-template-columns: 22px minmax(0, 1fr); gap: 10px; padding: 14px; }
+    .part-card > summary .pstat, .part-card > summary .pact { grid-column: 2; }
+    .part-body { padding: 0 12px 14px; }
+    .comp > summary { grid-template-columns: 22px minmax(0, 1fr); } .comp > summary .cov { grid-column: 2; }
+    .comp-body { padding: 2px 10px 12px; }
+    .kit > summary, .kit.flat > .krow { grid-template-columns: 22px minmax(0, 1fr); } .kit > summary .stock, .kit > summary .cov, .kit.flat > .krow .stock, .kit.flat > .krow .cov { grid-column: 2; justify-content: flex-start; }
+    .ocard > summary { grid-template-columns: 22px minmax(0, 1fr) auto; gap: 6px 12px; }
+    .ocard > summary .ocustw { grid-column: 2 / -1; } .ocard > summary .ostat { grid-column: 2; } .ocard > summary .oval { grid-row: 1; grid-column: 3; }
+    .ocard-body { padding: 0 12px 14px; }
+  }
+  @media (prefers-reduced-motion: reduce) { *, *::before { transition: none !important; animation: none !important; } }
+</style>
+</head>
+<body>
+<script src="../nav.js"></script>
+
+<!-- ============ LOGIN ============ -->
+<section id="login">
+  <form class="login-card" id="loginForm" autocomplete="off">
+    <div class="logo" aria-hidden="true">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M21 8 12 3 3 8v8l9 5 9-5z"/><path d="m3 8 9 5 9-5M12 13v8"/></svg>
+    </div>
+    <h1>Product Allocation</h1>
+    <p class="sub">Restricted area. Sign in to continue.</p>
+    <label for="u">Username</label>
+    <input id="u" name="u" required autocomplete="off" spellcheck="false" autocapitalize="off">
+    <label for="p">Password</label>
+    <input id="p" name="p" type="password" required autocomplete="off">
+    <button class="btn" id="loginBtn" type="submit">Sign in</button>
+    <div class="err" id="loginErr" role="alert"></div>
+  </form>
+</section>
+
+<!-- ============ APP ============ -->
+<section id="app" class="hidden">
+  <header>
+    <div class="bar">
+      <div class="brand">
+        <span class="logo" aria-hidden="true">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"><path d="M21 8 12 3 3 8v8l9 5 9-5z"/><path d="m3 8 9 5 9-5M12 13v8"/></svg>
+        </span>
+        <div style="min-width:0"><b>Product Allocation</b>
+          <div class="sync"><span class="dot" id="dot"></span><span id="updated">Loading…</span><span id="saveState"></span></div></div>
+      </div>
+      <nav class="tabs" role="tablist" aria-label="Pages">
+        <button class="tab" role="tab" id="tabComponents" data-view="components" aria-selected="true">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+          Components</button>
+        <button class="tab" role="tab" id="tabOrders" data-view="orders" aria-selected="false">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5h11M9 12h11M9 19h11"/><circle cx="4.5" cy="5" r="1.2"/><circle cx="4.5" cy="12" r="1.2"/><circle cx="4.5" cy="19" r="1.2"/></svg>
+          All Orders <span class="badge" id="orderCount">–</span></button>
+        <button class="tab" role="tab" id="tabUrgent" data-view="urgent" aria-selected="false">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 20h20z"/><path d="M12 10v4M12 17.5v.5"/></svg>
+          Urgent Parts <span class="badge urgent" id="urgentCount">–</span></button>
+        <button class="tab" role="tab" id="tabParts" data-view="parts" aria-selected="false">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M21 8 12 3 3 8v8l9 5 9-5z"/><path d="m3 8 9 5 9-5M12 13v8"/></svg>
+          All Parts <span class="badge" id="partCount">–</span></button>
+      </nav>
+      <div class="actions">
+        <button class="b primary lbl" id="autofillBtn" type="button" title="Autofill all orders">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg>
+          <span>Autofill</span></button>
+        <button class="b icon" id="themeBtn" type="button" title="Switch to dark mode" aria-label="Switch to dark mode">
+          <svg class="moon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>
+          <svg class="sun" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></button>
+        <button class="b icon" id="refreshBtn" type="button" title="Refresh now" aria-label="Refresh">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg></button>
+        <button class="b icon" id="logoutBtn" type="button" title="Sign out" aria-label="Sign out">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/><path d="M10 17l-5-5 5-5M5 12h11"/></svg></button>
+      </div>
+    </div>
+  </header>
+  <main>
+    <div id="confirm" class="confirm hidden" role="dialog" aria-labelledby="confirmTitle">
+      <div class="txt"><span class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="m12 3 1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/></svg></span>
+      <div><b id="confirmTitle">Autofill all orders?</b>
+      <p>This replaces every current allocation. Lowest order numbers are filled first: built stock first, then raw for whatever is still missing. You can undo it right after.</p></div></div>
+      <div class="confirm-actions"><button class="b" id="confirmNo" type="button">Cancel</button>
+      <button class="b primary" id="confirmYes" type="button">Autofill now</button></div>
+    </div>
+    <div class="pagehead"><h2 id="pageTitle">Components</h2><p id="pageSub"></p></div>
+    <div id="kpis"></div>
+    <div class="toolbar">
+      <div class="searchbox">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="search" type="search" placeholder="Search parts, components, kits, customers, orders…" autocomplete="off" aria-label="Search">
+        <span class="kbd" aria-hidden="true">/</span>
+      </div>
+      <select id="ptype" aria-label="Part type" class="hidden">
+        <option value="all">All types</option>
+        <option value="Component">Components (raw)</option>
+        <option value="Built kit">Built kits</option>
+        <option value="Other item">Other items</option>
+      </select>
+      <select id="sort" aria-label="Sort orders" class="hidden">
+        <option value="order">Sort: Order number</option>
+        <option value="status">Sort: Needs attention first</option>
+        <option value="value">Sort: Order value</option>
+        <option value="date">Sort: Order date</option>
+        <option value="eta">Sort: Expected date</option>
+      </select>
+      <div class="legend">
+        <span><i class="sw painted"></i>Built</span>
+        <span><i class="sw raw"></i>Raw</span>
+        <span><i class="sw left"></i>Still needed</span>
+      </div>
+    </div>
+    <p class="err" id="salesWarn" role="status"></p>
+    <div class="count" id="count"></div>
+    <div id="list"><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div></div>
+  </main>
+</section>
+<div id="toast" class="hidden" role="status"></div>
+
+<script>
+(() => {
+  // ====== CONFIG ======
+  const API_URL = 'https://script.google.com/macros/s/AKfycbylM1wj2LBLk3bDl3fndyolAc7-7zJ50wyXGSzTqv8to6nIsrggpNNFiBdwfyptsVp9/exec';
+  const REFRESH_SECONDS = 60;
+  const SAVE_DELAY_MS = 700;
+  // ====================
+
+  const $ = id => document.getElementById(id);
+  const store = {
+    get: k => { try { return sessionStorage.getItem(k); } catch (e) { return null; } },
+    set: (k, v) => { try { sessionStorage.setItem(k, v); } catch (e) {} },
+    del: k => { try { sessionStorage.removeItem(k); } catch (e) {} }
+  };
+  let token = store.get('kt_token');
+  let leaves = [], extras = [], pos = [], sales = [], inv = { kits: {}, comps: {}, items: {} }, alloc = {};
+  let pending = {};
+  let saving = false, saveTimer = null, refreshTimer = null, needsRender = false, loaded = false;
+  let view = ({ '#orders': 'orders', '#urgent': 'urgent', '#parts': 'parts' })[location.hash] || 'components';
+  let partType = store.get('kt_ptype') || 'all';
+  let orderFilter = 'all', orderSort = store.get('kt_sort') || 'order';
+  const openKeys = new Set();
+  const openOrders = new Set();
+  let D = null;
+
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+  const fmt = n => Number(n).toLocaleString(undefined, { maximumFractionDigits: 2 });
+  const byNum = (a, b) => String(a).localeCompare(String(b), undefined, { numeric: true });
+  const pKey = (order, kit) => ['P', order, kit].join('|');
+  const rKey = (order, kit, comp) => ['R', order, kit, comp].join('|');
+  const q = k => alloc[k] || 0;
+  const need = req => Math.max(0, Math.ceil(Number(req) - 1e-9));
+  const money = n => '$' + Number(n || 0).toLocaleString('en-CA', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const moneyShort = n => n >= 100000 ? '$' + (n / 1000).toLocaleString('en-CA', { maximumFractionDigits: 0 }) + 'k'
+                        : n >= 10000 ? '$' + (n / 1000).toLocaleString('en-CA', { maximumFractionDigits: 1 }) + 'k' : money(n);
+  // Dates are kept as 'yyyy-mm-dd' strings so they sort as text.
+  const pad = n => String(n).padStart(2, '0');
+  const TODAY = (() => { const d = new Date(); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); })();
+  const isoDate = v => { const m = String(v || '').match(/^(\d{4})-(\d{2})-(\d{2})/); return m ? m[0] : ''; };
+  const niceDate = iso => {
+    if (!iso) return '';
+    const d = new Date(iso + 'T12:00:00');
+    if (isNaN(d)) return iso;
+    return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: iso.slice(0, 4) === TODAY.slice(0, 4) ? undefined : 'numeric' });
+  };
+  const CAL = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>';
+  // Forecast f = { kind: 'now' | 'stock' | 'date' | 'none', date, late, by }
+  function etaText(f) {
+    if (!f || f.kind === 'now') return 'Ready now';
+    if (f.kind === 'stock') return 'In stock now';
+    if (f.kind === 'none') return 'No incoming PO';
+    return (f.late ? 'Overdue · was due ' : 'Expected ') + niceDate(f.date);
+  }
+  function etaTag(f, compact) {
+    if (f && f.kind === 'na') return '';
+    if (!f || f.kind === 'now') return compact ? '' : '<span class="eta now">' + CAL + 'Ready now</span>';
+    const cls = f.kind === 'none' ? 'none' : f.late ? 'late' : f.kind === 'stock' ? 'stock' : 'date';
+    const title = f.kind === 'date' && f.by && f.by.length ? ' title="' + esc('From ' + f.by.join(', ')) + '"' : '';
+    return '<span class="eta ' + cls + '"' + title + '>' + CAL + etaText(f) + '</span>';
+  }
+  const plural = (n, w) => fmt(n) + ' ' + w + (n === 1 ? '' : 's');
+  const pct = (a, b) => (b ? Math.round(a / b * 100) : 100);
+  const cleanPn = s => String(s).replace(/^\s*-\s*/, '');
+  const isFitKit = pn => /[A-Z]FK/i.test(pn);
+  const unitCost = l => (l.req ? (l.cost || 0) / l.req : 0);
+  const lineFill = l => {
+    const p = q(pKey(l.order, l.kit)), r = q(rKey(l.order, l.kit, l.comp));
+    return { p, r, cost: (p + r) * unitCost(l), left: Math.max(0, need(l.req) - p - r) };
+  };
+  const rowId = (pn, comp, kit, order) => 'p:' + pn + '|c:' + comp + '|k:' + kit + '|o:' + order;
+  const CHEV = '<span class="chev" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></span>';
+
+  // ---------- Statuses ----------
+  // full = all built · raw = covered but some raw (can't ship yet) · open = stock exists, not assigned · missing = not enough stock
+  const ST = { full: 'Fulfilled', raw: 'Partial Raw', open: 'Unassigned', missing: 'Parts Missing', na: 'No tracked parts' };
+  const RANK = { na: -1, full: 0, raw: 1, open: 2, missing: 3 };
+  const ORDER_OF = ['full', 'raw', 'missing', 'open'];
+  const worst = list => list.reduce((w, s) => (RANK[s] > RANK[w] ? s : w), 'full');
+  const chip = (s, extra, title, label) => '<span class="st ' + s + '"' + (title ? ' title="' + esc(title) + '"' : '') + '>' + (label || ST[s]) + (extra ? ' · ' + extra : '') + '</span>';
+
+  // Coverage meter: built | raw | still needed. Hover shows the numbers.
+  function meter(p, r, total, thick) {
+    const rest = Math.max(0, total - p - r);
+    const seg = (cls, v, name) => v > 0 ? '<i class="' + cls + '" style="flex:' + v + '" title="' + name + ': ' + fmt(v) + '"></i>' : '';
+    return '<div class="meter' + (thick ? ' thick' : '') + '" role="img" aria-label="' + fmt(p) + ' built, ' + fmt(r) + ' raw, ' + fmt(rest) + ' still needed">' +
+      seg('painted', p, 'Built') + seg('raw', r, 'Raw') + seg('', rest, 'Still needed') + '</div>';
+  }
+  function statusMeter(n, extraStyle) {
+    const cls = { full: 'full', raw: 'sraw', missing: 'missing', open: 'open' };
+    return '<div class="meter thick"' + (extraStyle ? ' style="' + extraStyle + '"' : '') + ' role="img" aria-label="' + ORDER_OF.map(k => n[k] + ' ' + ST[k]).join(', ') + '">' +
+      ORDER_OF.filter(k => n[k]).map(k => '<i class="' + cls[k] + '" style="flex:' + n[k] + '" title="' + ST[k] + ': ' + n[k] + '"></i>').join('') + '</div>';
+  }
+
+  function derive() {
+    const kitUsed = {}, compUsed = {}, seenP = {};
+    leaves.forEach(l => {
+      const pk = pKey(l.order, l.kit);
+      if (!seenP[pk]) { seenP[pk] = 1; kitUsed[l.kit] = (kitUsed[l.kit] || 0) + q(pk); }
+      compUsed[l.comp] = (compUsed[l.comp] || 0) + q(rKey(l.order, l.kit, l.comp));
+    });
+    const kitAvail = k => Math.max(0, ((inv.kits[k] || {}).onhand || 0) - (kitUsed[k] || 0));
+    const compAvail = c => Math.max(0, ((inv.comps[c] || {}).onhand || 0) - (compUsed[c] || 0));
+
+    const line = new Map();
+    leaves.forEach(l => {
+      const f = lineFill(l);
+      let s;
+      if (!f.left) s = f.r > 0 ? 'raw' : 'full';
+      else s = (kitAvail(l.kit) + compAvail(l.comp) >= f.left) ? 'open' : 'missing';
+      line.set(l, { f, s });
+    });
+
+    // Kit-level items (screws, boxes…) are set aside automatically, lowest order number first.
+    const left = {};
+    Object.keys(inv.items || {}).forEach(i => { left[i] = inv.items[i].onhand; });
+    const extra = new Map();
+    extras.slice().sort((a, b) => byNum(a.order, b.order) || byNum(a.pn, b.pn) || byNum(a.item, b.item)).forEach(x => {
+      const n = need(x.req), give = Math.min(n, Math.max(0, left[x.item] || 0));
+      left[x.item] = (left[x.item] || 0) - give;
+      extra.set(x, { give, short: n - give, s: n - give > 0 ? 'missing' : 'full' });
+    });
+
+    // ---------- Forecast: when can each still-missing piece be filled? ----------
+    // Lowest order number first: free stock now, then incoming POs (OS_POs tab) in date order.
+    const supply = {};   // 'K|kit' (built), 'R|comp' (raw), 'I|item' (other items) → receipts sorted by date
+    pos.forEach(po => {
+      const key = inv.comps[po.part] ? 'R|' + po.part : inv.kits[po.part] ? 'K|' + po.part : inv.items[po.part] ? 'I|' + po.part : null;
+      if (!key) return;
+      (supply[key] || (supply[key] = [])).push({ date: isoDate(po.date), qty: po.qty, left: po.qty, po: po.po, vendor: po.vendor });
+    });
+    Object.values(supply).forEach(list => list.sort((a, b) => (a.date || '9999').localeCompare(b.date || '9999')));
+    const freeNow = {};
+    Object.keys(inv.kits).forEach(k => { freeNow['K|' + k] = kitAvail(k); });
+    Object.keys(inv.comps).forEach(c => { freeNow['R|' + c] = compAvail(c); });
+    Object.keys(left).forEach(i => { freeNow['I|' + i] = Math.max(0, left[i]); });
+    const freeAtStart = Object.assign({}, freeNow);
+    // Shortfalls nothing can cover (no free stock, no PO quantity left), per part to order.
+    const unmet = {};
+    const addUnmet = (key, type, part, desc, qty, src) => {
+      const u = unmet[key] || (unmet[key] = { key, type, part, desc, short: 0, orders: new Set(), usedIn: new Set(), lines: [] });
+      u.short += qty; u.orders.add(src.order); u.usedIn.add(src.usedIn); u.lines.push(src);
+    };
+    // Take up to qty from these pools, earliest first. Returns how much was found, the latest date used and which POs.
+    function draw(keys, qty) {
+      let got = 0, date = '', usedNow = false; const by = [];
+      keys.forEach(k => { const t = Math.min(qty - got, freeNow[k] || 0); if (t > 0) { freeNow[k] -= t; got += t; usedNow = true; } });
+      const receipts = [];
+      keys.forEach(k => (supply[k] || []).forEach(r => receipts.push(r)));
+      receipts.sort((a, b) => (a.date || '9999').localeCompare(b.date || '9999'));
+      for (const r of receipts) {
+        if (got >= qty) break;
+        const t = Math.min(qty - got, r.left);
+        if (t <= 0) continue;
+        r.left -= t; got += t;
+        if (r.date && r.date > date) date = r.date;
+        by.push((r.po ? 'PO ' + r.po : 'PO') + (r.date ? ' (' + niceDate(r.date) + ')' : ''));
+      }
+      return { got, date, usedNow, by };
+    }
+    const mkF = (enough, date, usedNow, by) => !enough ? { kind: 'none' }
+      : date ? { kind: 'date', date, late: date < TODAY, by } : { kind: usedNow ? 'stock' : 'now' };
+
+    const fc = new Map();
+    const groups = {};
+    leaves.forEach(l => { const k = l.order + '|' + l.kit; (groups[k] || (groups[k] = { order: l.order, kit: l.kit, lines: [] })).lines.push(l); });
+    Object.values(groups).sort((a, b) => byNum(a.order, b.order) || byNum(a.kit, b.kit)).forEach(g => {
+      const lefts = g.lines.map(l => line.get(l).f.left);
+      if (lefts.every(v => !v)) { g.lines.forEach(l => fc.set(l, { kind: 'now' })); return; }
+      // A free built kit covers every component line of that kit at once.
+      const b = Math.min(freeNow['K|' + g.kit] || 0, ...lefts);
+      if (b > 0) freeNow['K|' + g.kit] -= b;
+      g.lines.forEach((l, i) => {
+        const rem = lefts[i] - b;
+        if (lefts[i] <= 0) { fc.set(l, { kind: 'now' }); return; }
+        if (rem <= 0) { fc.set(l, { kind: 'stock' }); return; }
+        const d = draw(['R|' + l.comp, 'K|' + l.kit], rem);
+        fc.set(l, mkF(d.got >= rem, d.date, d.usedNow || b > 0, d.by));
+        if (d.got < rem) addUnmet('R|' + l.comp, 'Component', l.comp, l.compDesc, rem - d.got, { order: l.order, usedIn: l.kit, line: l });
+      });
+    });
+    const xfc = new Map();
+    extras.slice().sort((a, b) => byNum(a.order, b.order) || byNum(a.pn, b.pn) || byNum(a.item, b.item)).forEach(x => {
+      const sh = extra.get(x).short;
+      if (!sh) { xfc.set(x, { kind: 'now' }); return; }
+      const d = draw(['I|' + x.item], sh);
+      xfc.set(x, mkF(d.got >= sh, d.date, d.usedNow, d.by));
+      if (d.got < sh) addUnmet('I|' + x.item, 'Other item', x.item, x.desc, sh - d.got, { order: x.order, usedIn: x.pn });
+    });
+    // Several forecasts together: ready when the last piece is.
+    const combine = list => {
+      if (list.some(f => f.kind === 'none')) return { kind: 'none' };
+      const dated = list.filter(f => f.kind === 'date');
+      if (dated.length) { const last = dated.reduce((a, b) => (b.date > a.date ? b : a)); return { kind: 'date', date: last.date, late: last.date < TODAY, by: last.by }; }
+      return list.some(f => f.kind === 'stock') ? { kind: 'stock' } : { kind: 'now' };
+    };
+
+    const orders = {};
+    const add = (o, src) => orders[o] || (orders[o] = { order: o, cust: src.cust || '', date: isoDate(src.date) || src.date || '', lines: [], extras: [], parts: new Set() });
+    leaves.forEach(l => { const o = add(l.order, l); o.lines.push(l); o.parts.add(l.pn); if (!o.cust && l.cust) o.cust = l.cust; });
+    extras.forEach(x => { if (orders[x.order]) { orders[x.order].extras.push(x); orders[x.order].parts.add(x.pn); } });
+    // Sales_Detail lines (freight, printing, cables…) that aren't already a part on the order. Duplicates are skipped.
+    const tracked = new Set();
+    leaves.forEach(l => tracked.add(l.order + '|' + l.pn));
+    extras.forEach(x => tracked.add(x.order + '|' + x.pn));
+    Object.values(orders).forEach(o => { o.other = []; });
+    sales.forEach(sl => {
+      if (tracked.has(sl.order + '|' + sl.pn)) return;
+      const o = orders[sl.order] || add(sl.order, sl);
+      if (!o.other) o.other = [];
+      if (!o.cust && sl.cust) o.cust = sl.cust;
+      if (!o.date && sl.date) o.date = isoDate(sl.date) || sl.date;
+      o.other.push(sl);
+    });
+
+    const K = { lines: 0, covered: 0, sale: 0, saleMax: 0 };
+    Object.values(orders).forEach(o => {
+      o.status = o.lines.length || o.extras.length ? worst(o.lines.map(l => line.get(l).s).concat(o.extras.map(x => extra.get(x).s))) : 'na';
+      o.otherTotal = o.other.reduce((t, x) => t + (x.total != null ? x.total : (x.unit || 0) * (x.qty || 0)), 0);
+      o.done = o.lines.filter(l => !line.get(l).f.left).length;
+      o.p = 0; o.r = 0; o.need = 0; o.cost = 0; o.costTotal = 0;
+      o.lines.forEach(l => { const f = line.get(l).f; o.p += f.p; o.r += f.r; o.need += need(l.req); o.cost += f.cost; o.costTotal += l.cost || 0; });
+      // Sale value per part = sale price × complete units its components can build.
+      o.partInfo = {}; o.sale = 0; o.saleMax = 0; o.priced = false;
+      const byPart = {};
+      o.lines.forEach(l => (byPart[l.pn] || (byPart[l.pn] = [])).push(l));
+      Object.keys(byPart).forEach(pn => {
+        const g = byPart[pn], f0 = g[0], ordered = f0.oqty;
+        let units = null;
+        if (ordered) units = Math.min(ordered, ...g.map(l => { const x = line.get(l).f, per = l.req / ordered; return per > 0 ? Math.floor((x.p + x.r) / per + 1e-9) : ordered; }));
+        const sale = f0.price != null && units != null ? f0.price * units : null;
+        if (sale != null) { o.sale += sale; o.saleMax += f0.price * ordered; o.priced = true; }
+        o.partInfo[pn] = { units, ordered, sale };
+      });
+      o.eta = o.status === 'na' ? { kind: 'na' } : combine(o.lines.map(l => fc.get(l)).concat(o.extras.map(x => xfc.get(x))));
+      // Which piece sets the date ("waiting on …")
+      if (o.eta.kind === 'date' || o.eta.kind === 'none') {
+        const hit = f => (o.eta.kind === 'none' ? f.kind === 'none' : f.kind === 'date' && f.date === o.eta.date);
+        const pick = o.lines.find(l => hit(fc.get(l)));
+        const pickX = !pick && o.extras.find(x => hit(xfc.get(x)));
+        o.etaPart = pick ? pick.comp : pickX ? pickX.item : '';
+      }
+      K.lines += o.lines.length; K.covered += o.done; K.sale += o.sale; K.saleMax += o.saleMax;
+      if (o.status === 'missing') { K.missing = (K.missing || 0) + 1; if (o.eta.kind === 'date') K.missingIncoming = (K.missingIncoming || 0) + 1; }
+    });
+    // Urgent = nothing on hand to give and nothing on any PO → needs ordering.
+    const urgent = [], alsoShort = [];
+    Object.values(unmet).forEach(u => {
+      u.onhand = u.type === 'Component' ? ((inv.comps[u.part] || {}).onhand || 0) : ((inv.items[u.part] || {}).onhand || 0);
+      u.incoming = (supply[u.key] || []).reduce((t, r) => t + r.qty, 0);
+      u.freeAtStart = freeAtStart[u.key] || 0;
+      // built kits made from this component count as stock too
+      const kitsFree = u.type === 'Component' ? [...u.usedIn].reduce((t, k) => t + (freeAtStart['K|' + k] || 0) + (supply['K|' + k] || []).reduce((a, r) => a + r.qty, 0), 0) : 0;
+      u.firstOrder = [...u.orders].sort(byNum)[0];
+      if (!u.freeAtStart && !u.incoming && !kitsFree) urgent.push(u); else alsoShort.push(u);
+    });
+    const byFirst = (a, b) => byNum(a.firstOrder, b.firstOrder) || b.short - a.short;
+    urgent.sort(byFirst); alsoShort.sort(byFirst);
+    // ---------- Every part, for the All Parts page ----------
+    const urgentKeys = new Set(urgent.map(u => u.key)), shortKeys = new Set(alsoShort.map(u => u.key));
+    const partsAll = [];
+    const mkPart = (key, type, part, desc, onhand, assigned, lines) => {
+      const orders = new Set(), usedIn = new Set();
+      lines.forEach(x => { orders.add(x.order); usedIn.add(x.usedIn); });
+      const sup = supply[key] || [];
+      const nextPO = sup.find(r => r.date) || sup[0];
+      const st = urgentKeys.has(key) ? 'urgent' : shortKeys.has(key) ? 'short' : 'ok';
+      partsAll.push({ key, type, part, desc, onhand, assigned, free: Math.max(0, onhand - assigned), incoming: sup.reduce((t, r) => t + r.qty, 0), nextPO,
+                      short: unmet[key] ? unmet[key].short : 0, orders, usedIn, st });
+    };
+    const compLines = {}, kitLines = {}, itemLines = {};
+    leaves.forEach(l => {
+      (compLines[l.comp] || (compLines[l.comp] = [])).push({ order: l.order, usedIn: l.kit, desc: l.compDesc });
+      (kitLines[l.kit] || (kitLines[l.kit] = [])).push({ order: l.order, usedIn: l.pn, desc: l.kitDesc });
+    });
+    const itemGive = {};
+    extras.forEach(x => { (itemLines[x.item] || (itemLines[x.item] = [])).push({ order: x.order, usedIn: x.pn, desc: x.desc }); itemGive[x.item] = (itemGive[x.item] || 0) + extra.get(x).give; });
+    Object.keys(compLines).forEach(c => mkPart('R|' + c, 'Component', c, compLines[c][0].desc, (inv.comps[c] || {}).onhand || 0, compUsed[c] || 0, compLines[c]));
+    Object.keys(kitLines).forEach(k => mkPart('K|' + k, 'Built kit', k, kitLines[k][0].desc, (inv.kits[k] || {}).onhand || 0, kitUsed[k] || 0, kitLines[k]));
+    Object.keys(itemLines).forEach(i => mkPart('I|' + i, 'Other item', i, itemLines[i][0].desc, (inv.items[i] || {}).onhand || 0, itemGive[i] || 0, itemLines[i]));
+    // Built-kit shortfalls are counted against the raw components they're made from, so a kit takes the worst status of those components.
+    const stOf = {}; partsAll.forEach(u => { stOf[u.key] = u.st; });
+    const sev = { ok: 0, short: 1, urgent: 2 };
+    partsAll.filter(u => u.type === 'Built kit').forEach(u => {
+      const comps = new Set(leaves.filter(l => l.kit === u.part).map(l => l.comp));
+      let worstC = 'ok';
+      comps.forEach(c => { const cs = stOf['R|' + c] || 'ok'; if (sev[cs] > sev[worstC]) worstC = cs; });
+      if (worstC !== 'ok' && u.st === 'ok') { u.st = 'kitwait'; u.viaRaw = worstC; }
+    });
+    return { line, extra, orders, kitAvail, compAvail, K, fc, xfc, combine, supply, urgent, alsoShort, partsAll };
+  }
+  // Status of one part inside one order (its component lines + its kit-level items).
+  function partStatus(pn, order) {
+    const o = D.orders[order];
+    if (!o) return 'full';
+    return worst(o.lines.filter(l => l.pn === pn).map(l => D.line.get(l).s)
+      .concat(o.extras.filter(x => x.pn === pn).map(x => D.extra.get(x).s)));
+  }
+
+  async function api(payload) {
+    // text/plain avoids a CORS preflight, which Apps Script doesn't support.
+    const res = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                                       body: JSON.stringify(payload), redirect: 'follow', cache: 'no-store', credentials: 'omit' });
+    if (!res.ok) throw new Error('Network error ' + res.status);
+    return res.json();
+  }
+
+  let toastTimer;
+  function toast(msg, action, onAction) {
+    const t = $('toast');
+    t.innerHTML = '<span></span>';
+    t.firstChild.textContent = msg;
+    if (action) {
+      const b = document.createElement('button');
+      b.type = 'button'; b.textContent = action;
+      b.addEventListener('click', () => { t.classList.add('hidden'); onAction(); });
+      t.appendChild(b);
+    }
+    t.classList.remove('hidden');
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.add('hidden'), action ? 12000 : 3500);
+  }
+
+  // ---------- Login ----------
+  $('loginForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const btn = $('loginBtn');
+    btn.disabled = true; $('loginErr').textContent = '';
+    try {
+      const r = await api({ action: 'login', username: $('u').value, password: $('p').value });
+      $('p').value = '';
+      if (!r.ok) { $('loginErr').textContent = r.error || 'Sign in failed.'; return; }
+      token = r.token; store.set('kt_token', token);
+      showApp();
+    } catch (err) {
+      $('loginErr').textContent = 'Could not reach the server. Check your connection.';
+    } finally { btn.disabled = false; }
+  });
+
+  function showLogin(msg) {
+    clearInterval(refreshTimer); refreshTimer = null; clearTimeout(saveTimer);
+    token = null; store.del('kt_token'); leaves = []; extras = []; alloc = {}; pending = {}; loaded = false;
+    $('list').innerHTML = ''; $('kpis').innerHTML = ''; $('saveState').textContent = '';
+    $('app').classList.add('hidden'); $('login').classList.remove('hidden');
+    $('loginErr').textContent = msg || '';
+    $('u').focus();
+  }
+
+  function showApp() {
+    $('login').classList.add('hidden'); $('app').classList.remove('hidden');
+    setView(view, true);
+    load();
+    clearInterval(refreshTimer);
+    refreshTimer = setInterval(() => { if (!document.hidden) load(); }, REFRESH_SECONDS * 1000);
+  }
+
+  $('logoutBtn').addEventListener('click', async () => {
+    if (Object.keys(pending).length) await flush();
+    if (token) api({ action: 'logout', token }).catch(() => {});
+    showLogin();
+  });
+  $('refreshBtn').addEventListener('click', () => load());
+
+  // ---------- Light / dark ----------
+  const sysDark = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : { matches: false };
+  const isDark = () => { const t = document.documentElement.getAttribute('data-theme'); return t ? t === 'dark' : sysDark.matches; };
+  function syncThemeBtn() {
+    const d = isDark();
+    document.documentElement.classList.toggle('is-dark', d);
+    const label = d ? 'Switch to light mode' : 'Switch to dark mode';
+    $('themeBtn').title = label; $('themeBtn').setAttribute('aria-label', label);
+  }
+  $('themeBtn').addEventListener('click', () => {
+    const next = isDark() ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    try { localStorage.setItem('pa_theme', next); } catch (e) {}
+    syncThemeBtn();
+  });
+  if (sysDark.addEventListener) sysDark.addEventListener('change', syncThemeBtn);
+  syncThemeBtn();
+
+  // ---------- Pages ----------
+  function setView(v, quiet) {
+    view = v;
+    $('tabComponents').setAttribute('aria-selected', v === 'components');
+    $('tabOrders').setAttribute('aria-selected', v === 'orders');
+    $('tabUrgent').setAttribute('aria-selected', v === 'urgent');
+    $('tabParts').setAttribute('aria-selected', v === 'parts');
+    $('sort').classList.toggle('hidden', v !== 'orders');
+    $('ptype').classList.toggle('hidden', v !== 'parts');
+    $('pageTitle').textContent = v === 'orders' ? 'All Orders' : v === 'urgent' ? 'Urgent Parts' : v === 'parts' ? 'All Parts' : 'Components';
+    $('pageSub').textContent = v === 'orders'
+      ? 'Every order in the system with its status, coverage and value. Open one to see everything in it.'
+      : v === 'parts' ? 'Every part needed by open orders: raw components, built kits and other items, with stock, incoming POs and what still needs ordering.'
+      : v === 'urgent' ? 'Parts with nothing left to give (none on hand, or all of it already assigned) and nothing on any PO, but still needed by open orders. These need to be ordered.'
+      : 'Every part on open orders, broken down into components, kits and orders. Assign built or raw stock to each order.';
+    try { history.replaceState(null, '', '#' + v); } catch (e) {}
+    const at = document.querySelector('.tab[aria-selected="true"]');
+    if (at && at.scrollIntoView) at.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    if (!quiet) { window.scrollTo(0, 0); safeRender(true); }
+  }
+  document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => setView(t.dataset.view)));
+  $('sort').value = orderSort;
+  $('ptype').value = partType;
+  $('ptype').addEventListener('change', () => { partType = $('ptype').value; store.set('kt_ptype', partType); safeRender(true); });
+  $('sort').addEventListener('change', () => { orderSort = $('sort').value; store.set('kt_sort', orderSort); safeRender(true); });
+  document.addEventListener('keydown', e => {
+    if (e.key === '/' && !e.target.matches('input, select, textarea') && !$('app').classList.contains('hidden')) { e.preventDefault(); $('search').focus(); }
+    if (e.key === 'Escape' && e.target === $('search')) { $('search').value = ''; safeRender(true); }
+  });
+
+  // ---------- Autofill ----------
+  $('autofillBtn').addEventListener('click', () => { $('confirm').classList.remove('hidden'); window.scrollTo({ top: 0, behavior: 'smooth' }); $('confirmYes').focus(); });
+  $('confirmNo').addEventListener('click', () => $('confirm').classList.add('hidden'));
+  $('confirmYes').addEventListener('click', async () => {
+    const btn = $('confirmYes');
+    btn.disabled = true; btn.textContent = 'Filling…';
+    try {
+      if (Object.keys(pending).length) await flush();
+      while (saving) await new Promise(r => setTimeout(r, 200));
+      saving = true; $('saveState').textContent = ' · Autofilling…';
+      const r = await api({ action: 'autofill', token });
+      saving = false;
+      if (!r.ok) { if (r.error === 'SESSION_EXPIRED') return showLogin('Your session expired. Please sign in again.'); throw new Error(r.error); }
+      applySnapshot(r);
+      $('saveState').classList.remove('bad'); $('saveState').textContent = ' · Saved';
+      $('confirm').classList.add('hidden');
+      const before = r.before || {};
+      toast('Autofilled: ' + D.K.covered + ' of ' + D.K.lines + ' lines covered.', 'Undo', () => undoTo(before));
+    } catch (err) {
+      saving = false;
+      toast('Autofill failed. Nothing was changed. Try again.');
+    } finally { btn.disabled = false; btn.textContent = 'Autofill now'; }
+  });
+
+  // Put every allocation back to how it was before autofill.
+  function undoTo(before) {
+    const keys = new Set([...Object.keys(alloc), ...Object.keys(before)]);
+    keys.forEach(k => {
+      const v = before[k] || 0;
+      if (v !== q(k)) { pending[k] = v; v > 0 ? alloc[k] = v : delete alloc[k]; }
+    });
+    safeRender(true);
+    flush().then(() => toast('Autofill undone.'));
+  }
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && token) load(); });
+  window.addEventListener('beforeunload', e => {
+    if (Object.keys(pending).length || saving) { e.preventDefault(); e.returnValue = ''; }
+  });
+
+  // ---------- Data ----------
+  function applySnapshot(r) {
+    leaves = r.leaves || []; extras = r.extras || []; pos = r.pos || []; sales = r.sales || []; alloc = r.alloc || {};
+    inv = r.inv || {}; inv.kits = inv.kits || {}; inv.comps = inv.comps || {}; inv.items = inv.items || {};
+    Object.keys(pending).forEach(k => { pending[k] > 0 ? alloc[k] = pending[k] : delete alloc[k]; });
+    $('salesWarn').textContent = r.salesError || '';
+    $('dot').classList.remove('stale');
+    $('updated').textContent = 'Live · updated ' + new Date(r.updated).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+    loaded = true;
+    safeRender();
+  }
+
+  let loading = false;
+  async function load() {
+    if (loading || !token || saving || Object.keys(pending).length) return;
+    loading = true; $('refreshBtn').disabled = true;
+    try {
+      const r = await api({ action: 'data', token });
+      if (!r.ok) { if (r.error === 'SESSION_EXPIRED') return showLogin('Your session expired. Please sign in again.'); throw new Error(r.error); }
+      applySnapshot(r);
+    } catch (err) {
+      $('dot').classList.add('stale');
+      $('updated').textContent = 'Couldn’t refresh, retrying';
+    } finally { loading = false; $('refreshBtn').disabled = false; }
+  }
+
+  // ---------- Limits (same rules the server enforces) ----------
+  function maxFor(key) {
+    const p = key.split('|'), cur = q(key);
+    if (p[0] === 'P') {
+      const [, order, kit] = p;
+      const lines = leaves.filter(l => l.order === order && l.kit === kit);
+      if (!lines.length) return cur;
+      const room = Math.min(...lines.map(l => need(l.req) - q(rKey(order, kit, l.comp))));
+      const used = paintedUsed(kit) - cur;
+      return Math.max(0, Math.min(room, ((inv.kits[kit] || {}).onhand || 0) - used));
+    }
+    const [, order, kit, comp] = p;
+    const line = leaves.find(l => l.order === order && l.kit === kit && l.comp === comp);
+    if (!line) return cur;
+    const used = rawUsed(comp) - cur;
+    return Math.max(0, Math.min(need(line.req) - q(pKey(order, kit)), ((inv.comps[comp] || {}).onhand || 0) - used));
+  }
+  function paintedUsed(kit) {
+    const orders = new Set(leaves.filter(l => l.kit === kit).map(l => l.order));
+    let s = 0; orders.forEach(o => { s += q(pKey(o, kit)); }); return s;
+  }
+  function rawUsed(comp) {
+    return leaves.filter(l => l.comp === comp).reduce((s, l) => s + q(rKey(l.order, l.kit, comp)), 0);
+  }
+
+  // ---------- Editing ----------
+  function setQty(key, want) {
+    want = Math.max(0, Math.floor(Number(want) || 0));
+    const cur = q(key);
+    let got = want;
+    if (want > cur) got = Math.min(want, Math.max(cur, maxFor(key)));
+    if (got < want) toast('Limited to ' + got + '. Not enough on hand, or the order is already filled.');
+    if (got === cur) { safeRender(true); return; }
+    got > 0 ? alloc[key] = got : delete alloc[key];
+    pending[key] = got;
+    $('saveState').classList.remove('bad'); $('saveState').textContent = ' · Unsaved…';
+    safeRender(true);
+    clearTimeout(saveTimer); saveTimer = setTimeout(flush, SAVE_DELAY_MS);
+  }
+
+  async function flush() {
+    clearTimeout(saveTimer);
+    if (saving) { saveTimer = setTimeout(flush, 400); return; }
+    const keys = Object.keys(pending);
+    if (!keys.length) return;
+    const batch = keys.map(k => ({ key: k, qty: pending[k] }));
+    pending = {};
+    saving = true; $('saveState').textContent = ' · Saving…';
+    try {
+      const r = await api({ action: 'save', token, changes: batch });
+      if (!r.ok) {
+        if (r.error === 'SESSION_EXPIRED') { saving = false; return showLogin('Your session expired. Sign in again, then redo your last change.'); }
+        throw new Error(r.error);
+      }
+      saving = false;
+      applySnapshot(r);
+      if (r.adjusted && r.adjusted.length) toast('Some amounts were reduced to match what is on hand.');
+      $('saveState').textContent = Object.keys(pending).length ? ' · Unsaved…' : ' · Saved';
+    } catch (err) {
+      saving = false;
+      batch.forEach(c => { if (!(c.key in pending)) pending[c.key] = c.qty; });
+      $('saveState').classList.add('bad'); $('saveState').textContent = ' · Not saved, retrying…';
+      saveTimer = setTimeout(flush, 5000);
+    }
+  }
+
+  // ---------- Clicks ----------
+  $('kpis').addEventListener('click', e => {
+    const b = e.target.closest('button[data-filter]');
+    if (!b) return;
+    const f = b.dataset.filter;
+    orderFilter = (view === 'orders' && f === orderFilter) ? 'all' : f;
+    if (view !== 'orders') setView('orders'); else safeRender(true);
+  });
+  $('count').addEventListener('click', e => {
+    if (e.target.closest('#clearFilter')) { orderFilter = 'all'; safeRender(true); }
+  });
+
+  $('list').addEventListener('click', e => {
+    const t = e.target.closest('button[data-otog]');
+    if (t) {
+      const id = t.dataset.otog;
+      openOrders.has(id) ? openOrders.delete(id) : openOrders.add(id);
+      safeRender(true);
+      return;
+    }
+    const v = e.target.closest('button[data-vall]');
+    if (v) {
+      e.preventDefault();   // the button sits on the part's row; don't also open/close the part
+      const pk = v.dataset.vall, wk = pk + '|orders';
+      if (openKeys.has(wk)) openKeys.delete(wk); else { openKeys.add(wk); openKeys.add(pk); }
+      safeRender(true);
+      if (openKeys.has(wk)) {
+        const panel = $('list').querySelector('[data-panel="' + CSS.escape(wk) + '"]');
+        if (panel) panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+      return;
+    }
+    const oc = e.target.closest('button[data-openorder]');
+    if (oc) { openOrder(oc.dataset.openorder); return; }
+    const g = e.target.closest('button[data-go]');
+    if (g) { try { goTo.apply(null, JSON.parse(g.dataset.go)); } catch (err) {} return; }
+    const b = e.target.closest('button[data-k]');
+    if (!b) return;
+    lastFocus = { k: b.dataset.k, c: b.dataset.c, d: b.dataset.d };
+    setQty(b.dataset.k, q(b.dataset.k) + Number(b.dataset.d));
+  });
+  $('list').addEventListener('change', e => {
+    const i = e.target.closest('input[data-k]');
+    if (!i) return;
+    lastFocus = null;
+    setQty(i.dataset.k, i.value);
+  });
+  $('list').addEventListener('keydown', e => {
+    if (e.key === 'Enter' && e.target.matches('input[data-k]')) e.target.blur();
+  });
+  $('list').addEventListener('focusout', () => { setTimeout(() => { if (needsRender && !editing()) safeRender(); }, 0); });
+
+  // Remember which dropdowns are open so refreshes don't collapse them; fill in lazy ones on open.
+  $('list').addEventListener('toggle', e => {
+    const el = e.target, key = el.dataset && el.dataset.key;
+    if (!key) return;
+    const lazy = el.open && el.classList.contains('lazy') && !el.querySelector('.dwrap');
+    if (!$('search').value.trim() || lazy || view === 'orders') el.open ? openKeys.add(key) : openKeys.delete(key);
+    if (lazy) safeRender(true);
+  }, true);
+
+  // ---------- Rendering helpers ----------
+  let lastFocus = null;
+  const editing = () => document.activeElement && document.activeElement.matches && document.activeElement.matches('#list input[data-k]');
+
+  function safeRender(force) {
+    if (!loaded) return;
+    if (!force && editing()) { needsRender = true; return; }
+    needsRender = false;
+    render();
+    if (lastFocus) {
+      const sel = 'button[data-k="' + CSS.escape(lastFocus.k) + '"][data-c="' + CSS.escape(lastFocus.c) + '"][data-d="' + lastFocus.d + '"]';
+      const el = $('list').querySelector(sel);
+      if (el && !el.disabled) el.focus({ preventScroll: true });
+      lastFocus = null;
+    }
+  }
+
+  let searchTimer;
+  $('search').addEventListener('input', () => { clearTimeout(searchTimer); searchTimer = setTimeout(() => safeRender(true), 120); });
+
+  const isOpen = (key, force) => (openKeys.has(key) || force ? ' open' : '');
+  const swatch = c => '<span class="swatch"><i style="background:' + (/white/i.test(c) ? '#fff' : /black/i.test(c) ? '#111' : 'transparent') + '"></i>' + esc(c) + '</span>';
+
+  function stepper(key, comp, kind, value, max) {
+    return '<span class="step ' + kind + (value > 0 ? ' has' : '') + '">' +
+      '<button type="button" data-k="' + esc(key) + '" data-c="' + esc(comp) + '" data-d="-1" aria-label="Remove one ' + (kind === 'painted' ? 'built' : kind) + '"' + (value <= 0 ? ' disabled' : '') + '>−</button>' +
+      '<input type="number" inputmode="numeric" min="0" step="1" data-k="' + esc(key) + '" data-c="' + esc(comp) + '" value="' + value + '" aria-label="' + (kind === 'painted' ? 'built' : kind) + ' quantity">' +
+      '<button type="button" data-k="' + esc(key) + '" data-c="' + esc(comp) + '" data-d="1" aria-label="Add one ' + (kind === 'painted' ? 'built' : kind) + '"' + (value >= max ? ' disabled' : '') + '>+</button></span>';
+  }
+
+  const covBlock = (p, r, total, label) =>
+    '<div class="cov">' + meter(p, r, total) + '<div class="lbl"><span>' + label + '</span><span><b>' + pct(Math.min(p + r, total), total) + '%</b> covered</span></div></div>';
+
+  // ---------- KPI strip (both pages) ----------
+  function renderKpis() {
+    const all = Object.values(D.orders), n = { full: 0, raw: 0, missing: 0, open: 0, na: 0 };
+    all.forEach(o => n[o.status]++);
+    const K = D.K;
+    const pressed = f => (view === 'orders' && orderFilter === f);
+    const tile = (f, label, val, sub) => '<button type="button" class="kpi" data-filter="' + f + '" aria-pressed="' + pressed(f) + '" title="Show ' + label + ' orders">' +
+      '<div class="k"><i class="sdot ' + f + '"></i>' + label + '</div><div class="v">' + val + '</div><div class="s">' + sub + '</div></button>';
+    $('kpis').innerHTML = '<div class="kpis">' +
+      '<button type="button" class="kpi" data-filter="all" aria-pressed="' + pressed('all') + '" title="Show all orders">' +
+        '<div class="k">Orders in system</div><div class="v">' + all.length + '</div>' + statusMeter(n, 'margin-top:7px') +
+        '<div class="s" style="margin-top:6px">' + pct(K.covered, K.lines) + '% of order lines covered</div></button>' +
+      tile('full', ST.full, n.full, pct(n.full, all.length) + '% · ready to ship') +
+      tile('raw', ST.raw, n.raw, 'not built yet') +
+      tile('missing', ST.missing, n.missing, (K.missingIncoming || 0) + ' of ' + (K.missing || 0) + ' have POs coming') +
+      tile('open', ST.open, n.open, 'stock available') +
+      '<div class="kpi"><div class="k">Sale value covered</div><div class="v money">' + moneyShort(K.sale) + '</div>' +
+        '<div class="s">of ' + moneyShort(K.saleMax) + ' possible</div></div>' +
+      '</div>';
+  }
+
+  // ---------- Components page ----------
+  function buildTree() {
+    const parts = {};
+    leaves.forEach(l => {
+      const p = parts[l.pn] || (parts[l.pn] = { part: l.pn, desc: l.pnDesc, comps: {} });
+      const c = p.comps[l.comp] || (p.comps[l.comp] = { part: l.comp, desc: l.compDesc, kits: {} });
+      const k = c.kits[l.kit] || (c.kits[l.kit] = { part: l.kit, desc: l.kitDesc, colour: l.colour, orders: [] });
+      k.orders.push(l);
+    });
+    const sum = (list, fn) => list.reduce((s, x) => s + fn(x), 0);
+    return Object.values(parts).sort((a, b) => byNum(cleanPn(a.part), cleanPn(b.part))).map(p => {
+      p.comps = Object.values(p.comps).sort((a, b) => byNum(a.part, b.part)).map(c => {
+        c.kits = Object.values(c.kits).sort((a, b) => byNum(a.part, b.part)).map(k => {
+          k.orders.sort((a, b) => byNum(a.order, b.order));
+          k.need = sum(k.orders, o => need(o.req));
+          k.p = sum(k.orders, o => D.line.get(o).f.p); k.r = sum(k.orders, o => D.line.get(o).f.r);
+          k.left = sum(k.orders, o => D.line.get(o).f.left);
+          return k;
+        });
+        ['need', 'p', 'r', 'left'].forEach(f => { c[f] = sum(c.kits, k => k[f]); });
+        return c;
+      });
+      ['need', 'p', 'r', 'left'].forEach(f => { p[f] = sum(p.comps, c => c[f]); });
+      return p;
+    });
+  }
+
+  function ordersBlock(c, k) {
+    let tReq = 0, tP = 0, tR = 0, tCost = 0, tSale = 0;
+    const body = k.orders.map(o => {
+      const pk = pKey(o.order, k.part), rk = rKey(o.order, k.part, c.part);
+      const { f, s } = D.line.get(o);
+      const sale = o.price == null ? null : (f.p + f.r) * o.price;
+      tReq += o.req; tP += f.p; tR += f.r; tCost += f.cost; tSale += sale || 0;
+      const id = rowId(o.pn, c.part, k.part, o.order), open = openOrders.has(id);
+      return '<tr data-row="' + esc(id) + '"><td><button type="button" class="otog" data-otog="' + esc(id) + '" aria-expanded="' + open + '" title="Show everything in this order">' + CHEV +
+        '<span><b>' + esc(o.order) + '</b>' + (o.cust ? '<small>' + esc(o.cust) + '</small>' : '') + '</span></button></td>' +
+        '<td class="num">' + fmt(o.req) + '</td>' +
+        '<td class="c">' + stepper(pk, c.part, 'painted', f.p, maxFor(pk)) + '</td>' +
+        '<td class="c">' + stepper(rk, c.part, 'raw', f.r, maxFor(rk)) + '</td>' +
+        '<td class="num cost">' + (f.cost ? money(f.cost) : '<span class="zero">—</span>') + '</td>' +
+        '<td class="num money">' + (sale == null ? '<span class="na" title="No unit_cdn in Sales_Detail for this order and part">—</span>' : sale ? money(sale) : '<span class="zero">—</span>') + '</td>' +
+        '<td><div class="stcell">' + chip(s, f.left ? fmt(f.left) + ' short' : '') + etaTag(D.fc.get(o), true) + '</div></td></tr>' +
+        (open ? '<tr class="detail"><td colspan="7"><div class="dwrap">' + orderView(o.order, o, 'k:' + id) + '</div></td></tr>' : '');
+    }).join('');
+
+    const kitOn = (inv.kits[k.part] || {}).onhand || 0, kitUsed = paintedUsed(k.part);
+    const compOn = (inv.comps[c.part] || {}).onhand || 0, compUsed = rawUsed(c.part);
+    const otherKits = [...new Set(leaves.filter(l => l.comp === c.part && l.kit !== k.part).map(l => l.kit))].sort(byNum);
+    const kitComps = new Set(leaves.filter(l => l.kit === k.part).map(l => l.comp)).size;
+
+    const incoming = key => (D.supply[key] || []).map(r => '<li><b>+' + fmt(r.qty) + '</b> ' + (r.date ? (r.date < TODAY ? '<span class="late">overdue (' + niceDate(r.date) + ')</span>' : niceDate(r.date)) : 'no date') +
+      (r.po ? ' · PO ' + esc(r.po) : '') + (r.vendor ? ' · ' + esc(r.vendor) : '') + '</li>').join('');
+    const incomingBlock = key => { const h = incoming(key); return h ? '<div class="incoming"><div class="ih">' + CAL + 'Incoming on POs</div><ul>' + h + '</ul></div>' : ''; };
+    const pool = (kind, title, on, used, note) =>
+      '<div class="pool"><h4><i class="sw ' + kind + '"></i>' + title + '</h4>' +
+      '<div class="meter">' + (used > 0 ? '<i class="' + kind + '" style="flex:' + used + '" title="Allocated: ' + fmt(used) + '"></i>' : '') +
+        (on - used > 0 ? '<i style="flex:' + (on - used) + '" title="Available: ' + fmt(on - used) + '"></i>' : '') + '</div>' +
+      '<dl><div><dt>On hand</dt><dd>' + fmt(on) + '</dd></div><div><dt>Allocated</dt><dd>' + fmt(used) + '</dd></div><div><dt>Available</dt><dd>' + fmt(Math.max(0, on - used)) + '</dd></div></dl>' +
+      (note ? '<div class="note">' + note + '</div>' : '') +
+      (used > on ? '<div class="warn">Over-allocated by ' + fmt(used - on) + '. On hand dropped in the sheet. Remove some to fix.</div>' : '') + '</div>';
+
+    // Stock boxes first, then the orders table.
+    return '<div class="pools">' +
+      pool('painted', 'Built ' + esc(k.part) + (k.colour ? ' · ' + esc(k.colour) : ''), kitOn, kitUsed,
+           (kitComps > 1 ? 'This kit has ' + kitComps + ' components. One built kit covers the order under each of them.' : '') + incomingBlock('K|' + k.part)) +
+      pool('raw', 'Raw ' + esc(c.part), compOn, compUsed, (otherKits.length ? 'Shared with ' + otherKits.map(esc).join(', ') : '') + incomingBlock('R|' + c.part)) +
+      '</div>' +
+      '<div class="tablewrap"><table class="ktable"><thead><tr><th>Order</th><th class="num">Qty req</th>' +
+      '<th class="c painted">Built</th><th class="c raw">Raw</th><th class="num cost">Avg Cost</th><th class="num money">Sale Value</th><th>Status</th></tr></thead>' +
+      '<tbody>' + body + '</tbody><tfoot><tr><td>Total</td><td class="num">' + fmt(tReq) + '</td>' +
+      '<td class="c pc">' + fmt(tP) + '</td><td class="c rc">' + fmt(tR) + '</td><td class="num cost">' + money(tCost) + '</td><td class="num money">' + money(tSale) + '</td>' +
+      '<td style="color:var(--muted);font-weight:500">' + (k.left ? fmt(k.left) + ' still needed' : 'All covered') + '</td></tr></tfoot></table></div>';
+  }
+
+  function partOrders(pn, pk, orders) {
+    const wk = pk + '|orders';
+    if (!openKeys.has(wk)) return '';
+    const items = orders.map(o => orderCard(D.orders[o], wk + '|o:' + o, partStatus(pn, o), 'Status of ' + cleanPn(pn) + ' in this order')).join('');
+    return '<div class="allorders" data-panel="' + esc(wk) + '"><div class="allorders-head"><b>All orders for <span class="mono">' + esc(cleanPn(pn)) + '</span></b>' +
+      '<span style="color:var(--muted)">' + plural(orders.length, 'order') + ' · status shown is for this part</span></div>' + items + '</div>';
+  }
+
+  function renderComponents(s) {
+    const m = v => String(v || '').toLowerCase().includes(s);
+    let tree = buildTree();
+    if (s) {
+      tree = tree.map(p => {
+        if (m(p.part) || m(p.desc)) return p;
+        const comps = p.comps.map(c => {
+          if (m(c.part) || m(c.desc)) return c;
+          const kits = c.kits.filter(k => m(k.part) || m(k.desc) || k.orders.some(o => m(o.order) || m(o.cust)));
+          return kits.length ? Object.assign({}, c, { kits }) : null;
+        }).filter(Boolean);
+        return comps.length ? Object.assign({}, p, { comps }) : null;
+      }).filter(Boolean);
+    }
+    $('count').innerHTML = '<span>' + plural(tree.length, 'part') + (s ? ' matching “' + esc(s) + '”' : '') + '</span>';
+    if (!tree.length) return '<div class="empty">' + (leaves.length ? 'No matches.' : 'No open requirements.') + '</div>';
+
+    return tree.map(p => {
+      const pk = 'p:' + p.part;
+      const orders = [...new Set(leaves.filter(l => l.pn === p.part).map(l => l.order))].sort(byNum);
+      const n = { full: 0, raw: 0, missing: 0, open: 0 };
+      orders.forEach(o => n[partStatus(p.part, o)]++);
+      const vOn = openKeys.has(pk + '|orders');
+      const comps = p.comps.map(c => {
+        const ck = pk + '|c:' + c.part;
+        const kits = c.kits.map(k => {
+          const kk = ck + '|k:' + k.part;
+          const kitOn = (inv.kits[k.part] || {}).onhand || 0, compOn = (inv.comps[c.part] || {}).onhand || 0;
+          const fit = isFitKit(p.part);   // fit kits stop at the kit: no order breakdown below it
+          return (fit ? '<div class="kit flat" data-key="' + esc(kk) + '"><div class="krow">' : '<details class="kit" data-key="' + esc(kk) + '"' + isOpen(kk, s) + '><summary>') +
+            (fit ? '<span class="chev blank"></span>' : CHEV) + '<div style="min-width:0"><div class="t"><span class="lvl">Kit</span>' + esc(k.part) + (k.colour ? swatch(k.colour) : '') + '</div>' +
+            (k.desc ? '<div class="d">' + esc(k.desc) + '</div>' : '') + '</div>' +
+            '<div class="stock" title="Still free to assign, out of what is on hand"><span class="p">' + fmt(D.kitAvail(k.part)) + ' of ' + fmt(kitOn) + ' built left</span><span class="r">' + fmt(D.compAvail(c.part)) + ' of ' + fmt(compOn) + ' raw left</span>' +
+              ((D.supply['R|' + c.part] || []).length || (D.supply['K|' + k.part] || []).length ? '<span class="in">+' + fmt([...(D.supply['R|' + c.part] || []), ...(D.supply['K|' + k.part] || [])].reduce((t, r) => t + r.qty, 0)) + ' incoming</span>' : '') + '</div>' +
+            covBlock(k.p, k.r, k.need, plural(k.orders.length, 'order')) +
+            (fit ? '</div></div>' : '</summary><div class="kit-body">' + ordersBlock(c, k) + '</div></details>');
+        }).join('');
+        return '<details class="comp" data-key="' + esc(ck) + '"' + isOpen(ck, s) + '>' +
+          '<summary>' + CHEV + '<div style="min-width:0"><div class="t"><span class="lvl">Component</span>' + esc(c.part) + '</div>' +
+          (c.desc ? '<div class="d">' + esc(c.desc) + '</div>' : '') + '</div>' +
+          covBlock(c.p, c.r, c.need, plural(c.kits.length, 'kit')) + '</summary>' +
+          '<div class="comp-body">' + kits + '</div></details>';
+      }).join('');
+      const counts = ORDER_OF.filter(k => n[k]).map(k => '<span><i class="sdot ' + k + '"></i><b>' + n[k] + '</b> ' + ST[k] + '</span>').join('');
+      return '<details class="part-card" data-key="' + esc(pk) + '"' + isOpen(pk, s) + '>' +
+        '<summary>' + CHEV +
+        '<div class="pname"><div class="t">' + esc(cleanPn(p.part)) + (isFitKit(p.part) ? '<span class="tag">Fit kit</span>' : '') + '</div>' +
+          (p.desc ? '<div class="d" title="' + esc(p.desc) + '">' + esc(p.desc) + '</div>' : '') + '</div>' +
+        '<div class="pstat" title="This part across its orders, by status">' + statusMeter(n) + '<div class="counts">' + counts + '</div></div>' +
+        '<div class="pcov">' + covBlock(p.p, p.r, p.need, plural(p.comps.length, 'component')) + '</div>' +
+        '<div class="pact"><button type="button" class="vall" data-vall="' + esc(pk) + '" aria-pressed="' + vOn + '">' +
+          (vOn ? 'Hide orders' : 'View all orders') + ' <span class="n">' + orders.length + '</span></button></div>' +
+        '</summary><div class="part-body">' + partOrders(p.part, pk, orders) +
+        '<div class="section-label">Components</div>' + comps + '</div></details>';
+    }).join('');
+  }
+
+  // ---------- One order, everything in it ----------
+  // markLeaf highlights the line you came from; ctx keeps open/closed state separate per place it's shown.
+  function orderView(order, markLeaf, ctx) {
+    const O = D.orders[order];
+    if (!O) return '';
+    const parts = {};
+    O.lines.forEach(l => (parts[l.pn] || (parts[l.pn] = [])).push(l));
+
+    const body = Object.keys(parts).sort((a, b) => byNum(cleanPn(a), cleanPn(b))).map(pn => {
+      const group = parts[pn].sort((a, b) => byNum(a.comp, b.comp) || byNum(a.kit, b.kit));
+      const first = group[0], info = O.partInfo[pn] || {};
+      const paintedKeys = {};
+      let raw = 0, cost = 0, reqSum = 0;
+      group.forEach(l => { const f = D.line.get(l).f; paintedKeys[pKey(l.order, l.kit)] = f.p; raw += f.r; cost += f.cost; reqSum += l.req; });
+      const painted = Object.values(paintedKeys).reduce((a, b) => a + b, 0);
+      const head = '<tr class="grp"><td colspan="3"><span class="pn">' + esc(cleanPn(pn)) + '</span>' + (isFitKit(pn) ? '<span class="tag">Fit kit</span>' : '') +
+        (first.pnDesc ? '<div class="d">' + esc(first.pnDesc) + '</div>' : '') + '</td>' +
+        '<td class="num"><b>' + (info.ordered ? fmt(info.ordered) : fmt(reqSum)) + '</b>' + (info.ordered ? '<span class="u">units</span>' : '') + '</td>' +
+        '<td class="num pc">' + fmt(painted) + '</td><td class="num rc">' + fmt(raw) + '</td>' +
+        '<td class="num cost">' + money(cost) + '</td>' +
+        '<td class="num money">' + (info.sale == null ? '<span class="na" title="No sale price or unit count for this part">—</span>'
+          : '<b>' + money(info.sale) + '</b><span class="u">' + fmt(info.units) + ' of ' + fmt(info.ordered) + ' units</span>') + '</td>' +
+        '<td><div class="stcell">' + chip(partStatus(pn, order)) + etaTag(D.combine(group.map(l => D.fc.get(l)).concat(O.extras.filter(x => x.pn === pn).map(x => D.xfc.get(x)))), true) + '</div></td></tr>';
+      const rows = group.map(l => {
+        const { f, s } = D.line.get(l), me = markLeaf && l === markLeaf;
+        const go = '<button type="button" class="go" data-go="' + esc(JSON.stringify([l.pn, l.comp, l.kit, l.order])) + '" title="Open this line to change it">' + esc(l.comp) + '</button>' +
+          (me ? '<span class="me-tag">this line</span>' : '');
+        return '<tr class="sub' + (me ? ' me' : '') + '"><td></td><td title="' + esc(l.compDesc || '') + '">' + go + '</td>' +
+          '<td class="kitc">' + esc(l.kit) + (l.colour ? ' <span style="color:var(--muted);font-family:var(--font)">· ' + esc(l.colour) + '</span>' : '') + '</td>' +
+          '<td class="num">' + fmt(l.req) + '</td><td class="num pc">' + (f.p || '<span class="zero">0</span>') + '</td><td class="num rc">' + (f.r || '<span class="zero">0</span>') + '</td>' +
+          '<td class="num cost">' + (f.cost ? money(f.cost) : '<span class="zero">—</span>') + '</td><td></td><td><div class="stcell">' + chip(s, f.left ? fmt(f.left) + ' short' : '') + etaTag(D.fc.get(l), true) + '</div></td></tr>';
+      }).join('');
+      return head + rows;
+    }).join('');
+
+    const fact = (k, v, cls, extra, wide) => '<div class="fact' + (wide ? ' wide' : '') + '"><div class="k">' + k + '</div><div class="v' + (cls ? ' ' + cls : '') + '">' + v + '</div>' + (extra || '') + '</div>';
+    return '<div class="ofacts">' +
+      fact('Order', '<span class="mono">' + esc(order) + '</span>') +
+      fact('Customer', '<span title="' + esc(O.cust) + '">' + esc(O.cust || '—') + '</span>', '', '', 'wide') +
+      fact('Ordered', esc(O.date || '—')) +
+      fact('Status', chip(O.status)) +
+      (O.status === 'na' ? '' : fact('Expected by', etaShort(O.eta), O.eta.kind === 'none' || O.eta.late ? 'bad' : O.eta.kind === 'date' ? '' : 'good',
+           O.etaPart ? '<div class="sub">' + (O.eta.kind === 'none' ? 'no PO for ' : 'waiting on ') + '<span class="mono">' + esc(O.etaPart) + '</span></div>' : '')) +
+      (O.lines.length ? fact('Lines covered', O.done + ' / ' + O.lines.length, '', meter(O.p, O.r, O.need)) : '') +
+      (!O.lines.length ? '' : fact('Avg cost', money(O.cost) + ' <span style="color:var(--muted);font-weight:400;font-size:12px">/ ' + moneyShort(O.costTotal) + '</span>')) +
+      (O.priced ? fact('Sale value', money(O.sale) + ' <span style="color:var(--muted);font-weight:400;font-size:12px">/ ' + moneyShort(O.saleMax) + '</span>', 'money') : '') +
+      '</div>' +
+      (O.lines.length ? '<div class="tablewrap"><table class="otable"><thead><tr><th>Part</th><th>Component</th><th>Kit</th>' +
+      '<th class="num">Req</th><th class="num painted">Built</th><th class="num raw">Raw</th><th class="num cost">Avg Cost</th><th class="num money">Sale Value</th><th>Status</th></tr></thead>' +
+      '<tbody>' + body + '</tbody></table></div>' : '') + extrasBlock(O, ctx) + otherLinesBlock(O, ctx);
+  }
+
+  const etaShort = f => !f || f.kind === 'now' ? 'Ready now' : f.kind === 'stock' ? 'In stock now' : f.kind === 'none' ? 'Not scheduled' : (f.late ? 'Overdue · ' : '') + niceDate(f.date);
+
+  // Lines from Sales_Detail that aren't tracked parts (freight, printing, cables, services…).
+  function otherLinesBlock(O, ctx) {
+    if (!O.other || !O.other.length) return '';
+    const key = 'S|' + ctx;
+    const rows = O.other.slice().sort((a, b) => byNum(cleanPn(a.pn), cleanPn(b.pn))).map(x =>
+      '<tr><td class="item">' + esc(cleanPn(x.pn)) + '</td><td style="color:var(--ink-2);white-space:normal">' + esc(x.desc) + '</td>' +
+      '<td class="num">' + fmt(x.qty) + '</td><td class="num">' + (x.unit != null ? money(x.unit) : '<span class="na">—</span>') + '</td>' +
+      '<td class="num money">' + money(x.total != null ? x.total : (x.unit || 0) * (x.qty || 0)) + '</td></tr>').join('');
+    return '<details class="extras" data-key="' + esc(key) + '"' + isOpen(key, O.status === 'na') + '>' +
+      '<summary>' + CHEV + '<span class="grow"><b>Also on this order</b> <span style="color:var(--muted)">· other sales lines from Sales_Detail (not tracked in stock) · ' + O.other.length + '</span></span>' +
+      '<span class="money" style="font-weight:650">' + money(O.otherTotal) + '</span></summary>' +
+      '<div class="xin"><div class="tablewrap"><table class="xtable"><thead><tr><th>Part</th><th>Description</th><th class="num">Qty</th><th class="num">Unit price</th><th class="num money">Line total</th></tr></thead>' +
+      '<tbody>' + rows + '</tbody></table></div></div></details>';
+  }
+
+  // Other items on the order (screws, boxes, inserts…) from the Kits tab.
+  function extrasBlock(O, ctx) {
+    if (!O.extras.length) return '';
+    const list = O.extras.slice().sort((a, b) => byNum(a.pn, b.pn) || byNum(a.item, b.item));
+    const short = list.filter(x => D.extra.get(x).short > 0).length;
+    const key = 'x|' + ctx;
+    const rows = list.map(x => {
+      const c = D.extra.get(x), on = (inv.items[x.item] || {}).onhand || 0;
+      return '<tr><td class="item">' + esc(x.item) + '</td><td style="color:var(--ink-2)">' + esc(x.desc) + '</td><td class="mono" style="font-size:12px;color:var(--muted)">' + esc(cleanPn(x.pn)) + '</td>' +
+        '<td class="num">' + fmt(x.req) + '</td><td class="num">' + fmt(on) + '</td>' +
+        '<td><div class="stcell">' + (c.short ? chip('missing', '', 'Not enough on hand after earlier orders', fmt(c.short) + ' short') : chip('full', '', 'In stock and set aside for this order', 'In stock')) + etaTag(D.xfc.get(x), true) + '</div></td></tr>';
+    }).join('');
+    return '<details class="extras" data-key="' + esc(key) + '"' + isOpen(key) + '>' +
+      '<summary>' + CHEV + '<span class="grow"><b>Other items</b> <span style="color:var(--muted)">· screws, boxes, inserts and packaging · ' + list.length + '</span></span>' +
+      (short ? chip('missing', '', '', plural(short, 'item') + ' short') : chip('full', '', '', 'All in stock')) + '</summary>' +
+      '<div class="xin"><div class="tablewrap"><table class="xtable"><thead><tr><th>Item</th><th>Description</th><th>Part</th>' +
+      '<th class="num">Req</th><th class="num">On hand</th><th>Status</th></tr></thead><tbody>' + rows + '</tbody></table></div>' +
+      '<p style="margin:8px 2px 0;color:var(--muted);font-size:12px">Stock is set aside automatically, lowest order number first.</p></div></details>';
+  }
+
+  // Order card, used on the All Orders page and inside a part's order list.
+  function orderCard(o, key, status, statusTitle) {
+    const open = openKeys.has(key);
+    const partsList = (o.parts.size ? [...o.parts] : o.other.map(x => x.pn)).sort((a, b) => byNum(cleanPn(a), cleanPn(b))).map(cleanPn);
+    return '<details class="ocard lazy" data-key="' + esc(key) + '"' + (open ? ' open' : '') + '>' +
+      '<summary>' + CHEV +
+      '<div><div class="onum">' + esc(o.order) + '</div><div class="odate">' + esc(o.date || '') + '</div></div>' +
+      '<div class="ocustw" style="min-width:0"><div class="ocust" title="' + esc(o.cust) + '">' + esc(o.cust || '—') + '</div>' +
+        '<div class="oparts" title="' + esc(partsList.join(', ')) + '">' + partsList.map(esc).join(' · ') + '</div></div>' +
+      '<div class="ocovw">' + (o.status === 'na' ? '<span style="color:var(--muted);font-size:12px">' + plural(o.other.length, 'sales line') + ' only</span></div>' : '<div class="cov">' + meter(o.p, o.r, o.need) + '<div class="lbl"><span>' + o.done + ' / ' + o.lines.length + ' lines</span><span><b>' + pct(Math.min(o.p + o.r, o.need), o.need) + '%</b></span></div></div></div>') +
+      '<div class="ostat">' + chip(status || o.status, '', statusTitle) + etaTag(o.eta, false) + '</div>' +
+      '<div class="oval">' + (o.priced ? money(o.sale) + '<small>of ' + moneyShort(o.saleMax) + '</small>' : o.status === 'na' && o.otherTotal ? money(o.otherTotal) + '<small>sales lines</small>' : '<span class="na">—</span>') + '</div>' +
+      '</summary><div class="ocard-body">' + (open ? '<div class="dwrap">' + orderView(o.order, null, key) + '</div>' : '') + '</div></details>';
+  }
+
+  const etaKey = f => (f.kind === 'na' ? '8' : f.kind === 'now' ? '0' : f.kind === 'stock' ? '1' : f.kind === 'date' ? '2' + f.date : '9');
+
+  // ---------- All Orders page ----------
+  function renderOrders(s) {
+    const m = v => String(v || '').toLowerCase().includes(s);
+    const list = Object.values(D.orders).filter(o => (orderFilter === 'all' || o.status === orderFilter) &&
+      (!s || m(o.order) || m(o.cust) || [...o.parts].some(m) || o.lines.some(l => m(l.comp) || m(l.kit)) || o.extras.some(x => m(x.item) || m(x.desc)) || o.other.some(x => m(x.pn) || m(x.desc))));
+    const sorters = {
+      order: (a, b) => byNum(a.order, b.order),
+      status: (a, b) => RANK[b.status] - RANK[a.status] || byNum(a.order, b.order),
+      eta: (a, b) => etaKey(a.eta).localeCompare(etaKey(b.eta)) || byNum(a.order, b.order),
+      value: (a, b) => b.saleMax - a.saleMax || byNum(a.order, b.order),
+      date: (a, b) => String(a.date).localeCompare(String(b.date)) || byNum(a.order, b.order)
+    };
+    list.sort(sorters[orderSort] || sorters.order);
+    $('count').innerHTML = '<span>' + plural(list.length, 'order') + (orderFilter !== 'all' ? ' · ' + chip(orderFilter) : '') + (s ? ' matching “' + esc(s) + '”' : '') + '</span>' +
+      (orderFilter !== 'all' ? '<button type="button" class="b" id="clearFilter" style="height:28px;font-size:12px">Clear filter</button>' : '');
+    if (!list.length) return '<div class="empty">No orders match.</div>';
+    return list.map(o => orderCard(o, 'O:' + o.order)).join('');
+  }
+
+  // ---------- Urgent Parts page ----------
+  function urgentTable(list, showWhy) {
+    const rows = list.map(u => {
+      const orders = [...u.orders].sort(byNum);
+      const chips = orders.slice(0, 6).map(o => '<button type="button" class="ochip" data-openorder="' + esc(o) + '" title="Open order ' + esc(o) + '">' + esc(o) + '</button>').join('') +
+        (orders.length > 6 ? '<span class="more">+' + (orders.length - 6) + ' more</span>' : '');
+      const used = [...u.usedIn].sort(byNum).map(x => esc(cleanPn(x)));
+      const why = !showWhy ? '' : '<td class="why">' + (u.incoming ? 'On PO, not enough (' + fmt(u.incoming) + ' coming)' : u.freeAtStart ? 'Some in stock, not enough' : 'Built kits only, not enough') + '</td>';
+      return '<tr><td><div class="upart">' + esc(u.part) + '</div><div class="d">' + esc(u.desc || '') + '</div></td>' +
+        '<td><span class="utype">' + u.type + '</span></td>' +
+        '<td class="num">' + fmt(u.onhand) + (u.onhand && !u.freeAtStart ? '<div class="d" style="text-align:right">all assigned</div>' : '') + '</td>' +
+        '<td class="num"><b class="ushort">' + fmt(u.short) + '</b></td>' + why +
+        '<td><div class="ochips">' + chips + '</div></td>' +
+        '<td class="used" title="' + used.join(', ') + '">' + used.slice(0, 3).join(', ') + (used.length > 3 ? ' +' + (used.length - 3) : '') + '</td></tr>';
+    }).join('');
+    return '<div class="tablewrap"><table class="utable"><thead><tr><th>Part</th><th>Type</th><th class="num">On hand</th><th class="num">Need to order</th>' +
+      (showWhy ? '<th>Why</th>' : '') + '<th>Orders waiting</th><th>Used in</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+  }
+  function renderUrgent(s) {
+    const m = u => !s || [u.part, u.desc, u.type, ...u.orders, ...u.usedIn].some(v => String(v || '').toLowerCase().includes(s));
+    const list = D.urgent.filter(m), also = D.alsoShort.filter(m);
+    const total = list.reduce((t, u) => t + u.short, 0);
+    $('count').innerHTML = '<span>' + plural(list.length, 'part') + ' to order' + (list.length ? ' · ' + fmt(total) + ' units in total' : '') + (s ? ' matching “' + esc(s) + '”' : '') + ' · first order waiting first</span>';
+    let html = list.length ? urgentTable(list, false)
+      : '<div class="empty">Nothing urgent' + (s ? ' matches.' : '. Every part still needed is either in stock or on a PO.') + '</div>';
+    if (also.length) {
+      const key = 'U|also';
+      html += '<details class="extras alsoshort" data-key="' + key + '"' + isOpen(key) + '><summary>' + CHEV +
+        '<span class="grow"><b>Also short</b> <span style="color:var(--muted)">· some stock or a PO exists, but not enough for every order · ' + also.length + '</span></span>' +
+        chip('raw', '', '', plural(also.length, 'part')) + '</summary><div class="xin">' + urgentTable(also, true) + '</div></details>';
+    }
+    return html;
+  }
+  // ---------- All Parts page ----------
+  const PST = { urgent: ['missing', 'Order now'], kitwait: ['open', 'Waiting on raw parts'], short: ['raw', 'Short'], ok: ['full', 'Covered'] };
+  function renderParts(s) {
+    const m = u => !s || [u.part, u.desc, u.type, ...u.orders, ...u.usedIn].some(v => String(v || '').toLowerCase().includes(s));
+    const rank = { urgent: 0, short: 1, kitwait: 2, ok: 3 }, trank = { 'Component': 0, 'Built kit': 1, 'Other item': 2 };
+    const list = D.partsAll.filter(u => (partType === 'all' || u.type === partType) && m(u))
+      .sort((a, b) => rank[a.st] - rank[b.st] || trank[a.type] - trank[b.type] || byNum(a.part, b.part));
+    const n = { urgent: 0, short: 0, kitwait: 0, ok: 0 };
+    list.forEach(u => n[u.st]++);
+    $('count').innerHTML = '<span>' + plural(list.length, 'part') + (s ? ' matching “' + esc(s) + '”' : '') + ' · ' +
+      ['urgent', 'short', 'kitwait', 'ok'].filter(k => n[k]).map(k => chip(PST[k][0], '', '', n[k] + ' ' + PST[k][1])).join(' ') + '</span>';
+    if (!list.length) return '<div class="empty">No parts match.</div>';
+    const rows = list.map(u => {
+      const orders = [...u.orders].sort(byNum);
+      const chips = orders.slice(0, 6).map(o => '<button type="button" class="ochip" data-openorder="' + esc(o) + '" title="Open order ' + esc(o) + '">' + esc(o) + '</button>').join('') +
+        (orders.length > 6 ? '<span class="more">+' + (orders.length - 6) + ' more</span>' : '');
+      const used = [...u.usedIn].sort(byNum).map(x => esc(cleanPn(x)));
+      const po = u.incoming ? '<b>+' + fmt(u.incoming) + '</b>' + (u.nextPO && u.nextPO.date ? '<div class="d" style="text-align:right">' + (u.nextPO.date < TODAY ? 'overdue ' : 'next ') + niceDate(u.nextPO.date) + '</div>' : '') : '<span class="zero">—</span>';
+      return '<tr><td><div class="upart">' + esc(u.part) + '</div><div class="d">' + esc(u.desc || '') + '</div></td>' +
+        '<td><span class="utype">' + u.type + '</span></td>' +
+        '<td class="num">' + fmt(u.onhand) + '</td>' +
+        '<td class="num">' + (u.assigned ? fmt(u.assigned) : '<span class="zero">0</span>') + '</td>' +
+        '<td class="num"><b>' + fmt(u.free) + '</b></td>' +
+        '<td class="num">' + po + '</td>' +
+        '<td class="num">' + (u.short ? '<b class="ushort">' + fmt(u.short) + '</b>' : u.viaRaw ? '<span class="d" title="Order the raw components this kit is built from">see raw parts</span>' : '<span class="zero">—</span>') + '</td>' +
+        '<td>' + chip(PST[u.st][0], '', u.st === 'urgent' ? 'Nothing to give and nothing on PO' : u.st === 'short' ? 'Stock or POs exist, but not enough for every order' : u.st === 'kitwait' ? 'Not enough built kits; the raw parts it is made from need ordering (see those rows)' : 'Every order using it is covered by stock or POs', PST[u.st][1]) + '</td>' +
+        '<td><div class="ochips">' + chips + '</div></td>' +
+        '<td class="used" title="' + used.join(', ') + '">' + used.slice(0, 3).join(', ') + (used.length > 3 ? ' +' + (used.length - 3) : '') + '</td></tr>';
+    }).join('');
+    return '<div class="tablewrap"><table class="utable ptable"><thead><tr><th>Part</th><th>Type</th><th class="num">On hand</th><th class="num">Assigned</th><th class="num">Free</th>' +
+      '<th class="num">Incoming</th><th class="num">Need to order</th><th>Status</th><th>Orders</th><th>Used in</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+  }
+
+  // Jump to an order on the All Orders page and open it.
+  function openOrder(order) {
+    $('search').value = ''; orderFilter = 'all';
+    openKeys.add('O:' + order);
+    setView('orders', true);
+    safeRender(true);
+    const el = $('list').querySelector('details[data-key="' + CSS.escape('O:' + order) + '"]');
+    if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+  }
+
+  // Open part → component → kit for a line and scroll to its order row.
+  function goTo(pn, comp, kit, order) {
+    if ($('search').value) $('search').value = '';
+    const pk = 'p:' + pn, ck = pk + '|c:' + comp, kk = ck + '|k:' + kit;
+    [pk, ck, kk].forEach(k => openKeys.add(k));
+    if (view !== 'components') setView('components', true);
+    safeRender(true);
+    const row = $('list').querySelector('tr[data-row="' + CSS.escape(rowId(pn, comp, kit, order)) + '"]')
+             || $('list').querySelector('.kit.flat[data-key="' + CSS.escape(kk) + '"] > .krow');
+    if (!row) return;
+    row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    row.classList.remove('flash'); void row.offsetWidth; row.classList.add('flash');
+  }
+
+  function render() {
+    D = derive();
+    $('orderCount').textContent = Object.keys(D.orders).length;
+    $('urgentCount').textContent = D.urgent.length;
+    $('urgentCount').classList.toggle('zero', !D.urgent.length);
+    $('partCount').textContent = D.partsAll.length;
+    renderKpis();
+    const s = $('search').value.trim().toLowerCase();
+    $('list').innerHTML = view === 'orders' ? renderOrders(s) : view === 'urgent' ? renderUrgent(s) : view === 'parts' ? renderParts(s) : renderComponents(s);
+  }
+
+  if (token) showApp(); else $('u').focus();
+})();
+</script>
+</body>
+</html>

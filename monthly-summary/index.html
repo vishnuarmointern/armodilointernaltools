@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src https://script.google.com https://script.googleusercontent.com; form-action 'none'; base-uri 'none'">
+<title>Monthly Summary</title>
+<script>try { var t = localStorage.getItem('ms_theme'); if (t === 'dark' || t === 'light') document.documentElement.setAttribute('data-theme', t); } catch (e) {}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f4f1ea; --paper: #fbfaf6; --ink: #1d1b16; --ink-2: #4a463d; --muted: #7c766a; --faint: #a8a294;
+    --line: #e2ddd1; --line-2: #ece8de; --row: #f6f3ec; --hover: #efebe1;
+    --accent: #1f5d4c; --accent-ink: #174a3c; --accent-soft: #e3eee9; --on-accent: #fbfaf6;
+    --bar: #2f7a64; --bar-track: #ebe6da; --warn: #9a5b12; --warn-soft: #fbf0de; --err: #a8322a;
+    --serif: "Fraunces", Georgia, "Times New Roman", serif;
+    --font: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --shadow: 0 1px 0 rgba(29,27,22,.04), 0 8px 24px -12px rgba(29,27,22,.12);
+    --r: 12px; color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --bg: #14130f; --paper: #1c1a16; --ink: #ede8dc; --ink-2: #cfc8b8; --muted: #9a937f; --faint: #6f6959;
+      --line: #2f2c25; --line-2: #26241e; --row: #211f1a; --hover: #26241e;
+      --accent: #7cc3ab; --accent-ink: #9fd6c2; --accent-soft: #1c2e28; --on-accent: #14130f;
+      --bar: #5fae94; --bar-track: #2a2822; --warn: #e3a95a; --warn-soft: #2e2416; --err: #f08a80;
+      --shadow: 0 0 0 1px rgba(255,255,255,.02); color-scheme: dark; }
+  }
+  :root[data-theme="dark"] { --bg: #14130f; --paper: #1c1a16; --ink: #ede8dc; --ink-2: #cfc8b8; --muted: #9a937f; --faint: #6f6959;
+    --line: #2f2c25; --line-2: #26241e; --row: #211f1a; --hover: #26241e;
+    --accent: #7cc3ab; --accent-ink: #9fd6c2; --accent-soft: #1c2e28; --on-accent: #14130f;
+    --bar: #5fae94; --bar-track: #2a2822; --warn: #e3a95a; --warn-soft: #2e2416; --err: #f08a80;
+    --shadow: 0 0 0 1px rgba(255,255,255,.02); color-scheme: dark; }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font); font-size: 14px; line-height: 1.45;
+               -webkit-font-smoothing: antialiased; font-feature-settings: "cv11", "ss01"; }
+  .hidden { display: none !important; }
+  .num { font-variant-numeric: tabular-nums; }
+  button, select, input { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* ---------- Login ---------- */
+  #login { min-height: 100vh; display: grid; grid-template-columns: 1.1fr 1fr; }
+  .login-art { background: var(--accent); color: var(--on-accent); padding: 48px; display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden; }
+  .login-art h1 { font-family: var(--serif); font-weight: 500; font-size: 44px; line-height: 1.05; letter-spacing: -.02em; margin: 0; max-width: 9ch; }
+  .login-art p { opacity: .8; max-width: 34ch; margin: 14px 0 0; }
+  .login-art .ledger { position: absolute; top: 90px; right: -30px; width: 52%; opacity: .14; }
+  .login-art small { opacity: .7; letter-spacing: .12em; text-transform: uppercase; font-size: 11px; font-weight: 600; }
+  .login-form { display: grid; place-items: center; padding: 32px; }
+  .login-form form { width: 100%; max-width: 340px; }
+  .login-form h2 { font-family: var(--serif); font-weight: 500; font-size: 26px; margin: 0 0 4px; letter-spacing: -.01em; }
+  .login-form .sub { color: var(--muted); margin: 0 0 24px; }
+  label.f { display: block; font-size: 12px; font-weight: 600; color: var(--ink-2); margin: 14px 0 6px; }
+  input.t { width: 100%; height: 42px; border: 1px solid var(--line); border-radius: 10px; padding: 0 12px; background: var(--paper); transition: border-color .15s, box-shadow .15s; }
+  input.t:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 16%, transparent); }
+  .err { color: var(--err); font-size: 13px; min-height: 18px; margin: 10px 0 0; }
+  @media (max-width: 760px) { #login { grid-template-columns: 1fr; } .login-art { padding: 28px; min-height: 200px; } .login-art h1 { font-size: 32px; } }
+
+  /* ---------- Buttons ---------- */
+  .b { height: 36px; padding: 0 14px; border-radius: 9px; border: 1px solid var(--line); background: var(--paper); cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+       font-weight: 500; white-space: nowrap; transition: background .15s, border-color .15s; }
+  .b:hover { background: var(--hover); }
+  .b.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); font-weight: 600; }
+  .b.primary:hover { background: var(--accent-ink); }
+  .b.wide { width: 100%; justify-content: center; height: 42px; margin-top: 20px; }
+  .b.icon { width: 36px; padding: 0; justify-content: center; }
+  .b:disabled { opacity: .55; cursor: default; }
+  #refreshBtn.spin svg { animation: spin .9s linear infinite; } @keyframes spin { to { transform: rotate(360deg); } }
+  .sun { display: none; }
+  .is-dark .sun { display: block; } .is-dark .moon { display: none; }
+
+  /* ---------- App shell ---------- */
+  header.top { position: sticky; top: 0; z-index: 5; background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: saturate(1.4) blur(10px); border-bottom: 1px solid var(--line); }
+  .top-in { max-width: 1120px; margin: 0 auto; padding: 12px 24px; display: flex; align-items: center; gap: 14px; }
+  .mark { width: 30px; height: 30px; border-radius: 8px; background: var(--accent); color: var(--on-accent); display: grid; place-items: center; flex: none; }
+  .brand b { font-family: var(--serif); font-weight: 600; font-size: 17px; letter-spacing: -.01em; }
+  .brand .sync { color: var(--muted); font-size: 12px; }
+  .grow { flex: 1; }
+  main { max-width: 1120px; margin: 0 auto; padding: 28px 24px 80px; }
+
+  /* ---------- Range picker ---------- */
+  .range { background: var(--paper); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--shadow); padding: 18px 20px; }
+  .range h1 { font-family: var(--serif); font-weight: 500; font-size: 28px; letter-spacing: -.015em; margin: 0 0 2px; }
+  .range .sub { color: var(--muted); margin: 0 0 16px; }
+  .pick { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 14px; }
+  .pick fieldset { border: 0; margin: 0; padding: 0; }
+  .pick legend { font-size: 11px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; padding: 0; }
+  .pick .pair { display: flex; gap: 6px; }
+  select.s { height: 40px; border: 1px solid var(--line); border-radius: 9px; background: var(--paper); padding: 0 30px 0 12px; cursor: pointer; appearance: none;
+             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%237c766a' stroke-width='1.6'/%3E%3C/svg%3E");
+             background-repeat: no-repeat; background-position: right 11px center; }
+  select.s.m { min-width: 128px; } select.s.d { min-width: 82px; } select.s.y { min-width: 92px; }
+  .arrow { color: var(--faint); padding-bottom: 10px; }
+  .pick .b.primary { height: 40px; padding: 0 18px; }
+  .presets { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
+  .chip { border: 1px solid var(--line); background: transparent; border-radius: 99px; padding: 4px 12px; font-size: 12.5px; color: var(--ink-2); cursor: pointer; }
+  .chip:hover { border-color: var(--accent); color: var(--accent-ink); }
+  .chip[aria-pressed="true"] { background: var(--accent-soft); border-color: transparent; color: var(--accent-ink); font-weight: 600; }
+
+  /* ---------- Result ---------- */
+  .res-head { display: flex; align-items: flex-end; gap: 12px; flex-wrap: wrap; margin: 30px 0 12px; }
+  .res-head h2 { font-family: var(--serif); font-weight: 500; font-size: 22px; margin: 0; letter-spacing: -.01em; }
+  .res-head .meta { color: var(--muted); font-size: 13px; }
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--line); border-radius: var(--r); background: var(--paper); box-shadow: var(--shadow); margin-bottom: 14px; }
+  .stat { padding: 14px 18px; border-left: 1px solid var(--line-2); min-width: 0; }
+  .stat:first-child { border-left: 0; }
+  .stat .k { font-size: 11px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .stat .v { font-family: var(--serif); font-size: 26px; font-weight: 500; letter-spacing: -.01em; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .stat .h { font-size: 12px; color: var(--muted); }
+
+  .ledger-wrap { background: var(--paper); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--shadow); overflow: auto; }
+  table.ledger { width: 100%; border-collapse: collapse; min-width: 560px; }
+  .ledger th, .ledger td { padding: 10px 16px; text-align: right; white-space: nowrap; }
+  .ledger th:first-child, .ledger td:first-child { text-align: left; position: sticky; left: 0; background: inherit; }
+  .ledger thead th { font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--line); background: var(--paper); position: sticky; top: 0; }
+  .ledger thead th.sel { color: var(--accent-ink); }
+  .ledger thead th button { all: unset; cursor: pointer; }
+  .ledger tbody tr { background: var(--paper); }
+  .ledger tbody tr:nth-child(even) { background: var(--row); }
+  .ledger tbody tr:hover { background: var(--hover); }
+  .ledger tbody td { border-bottom: 1px solid var(--line-2); }
+  .ledger td.mo { font-weight: 600; }
+  .ledger td.mo small { color: var(--muted); font-weight: 400; margin-left: 6px; }
+  .ledger tr.yr td { background: var(--bg); color: var(--muted); font-size: 11px; font-weight: 600; letter-spacing: .12em; padding-top: 7px; padding-bottom: 7px; text-align: left; }
+  .ledger tr.empty td { color: var(--faint); }
+  .ledger td.barc { width: 28%; min-width: 140px; padding-left: 4px; }
+  .bar { height: 8px; border-radius: 99px; background: var(--bar-track); overflow: hidden; }
+  .bar i { display: block; height: 100%; background: var(--bar); border-radius: 99px; }
+  .ledger tfoot td { background: var(--paper); border-top: 2px solid var(--ink); font-weight: 700; padding-top: 13px; padding-bottom: 13px; position: sticky; bottom: 0; }
+  .ledger tfoot td:first-child { font-family: var(--serif); font-size: 16px; font-weight: 600; }
+  .ledger tfoot tr.avg td { border-top: 0; font-weight: 500; color: var(--muted); padding-top: 0; position: static; }
+  .ledger td.mo { padding: 0; }
+  .exp { all: unset; box-sizing: border-box; display: flex; align-items: center; gap: 8px; width: 100%; padding: 10px 16px; cursor: pointer; font-weight: 600; }
+  .exp:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+  .exp .chev { width: 16px; height: 16px; flex: none; color: var(--muted); transition: transform .15s; }
+  .exp[aria-expanded="true"] .chev { transform: rotate(90deg); color: var(--accent-ink); }
+  .exp:disabled { cursor: default; } .exp:disabled .chev { opacity: .3; }
+  .ledger tr.open > td { background: var(--accent-soft); }
+  .ledger tr.det > td { padding: 0 0 14px; background: var(--accent-soft); position: static; text-align: left; white-space: normal; }
+  .orders { margin: 0 14px; background: var(--paper); border: 1px solid var(--line); border-radius: 10px; overflow-x: auto; }
+  table.otab { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .otab th, .otab td { padding: 8px 12px; text-align: left; white-space: nowrap; border-bottom: 1px solid var(--line-2); }
+  .otab th { position: sticky; top: 0; background: var(--paper); font-size: 10.5px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); z-index: 1; }
+  .otab td.r, .otab th.r { text-align: right; font-variant-numeric: tabular-nums; }
+  .otab td.on { font-weight: 700; color: var(--accent-ink); }
+  .otab td.dt { color: var(--ink-2); font-variant-numeric: tabular-nums; }
+  .otab td.info { white-space: normal; min-width: 120px; max-width: 280px; color: var(--ink-2); }
+  .otab tr:last-child td { border-bottom: 0; }
+  .otab tbody tr:hover td { background: var(--hover); }
+  /* ---------- View switch + part view ---------- */
+  .viewbar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 26px 0 0; }
+  .seg { display: inline-flex; background: var(--bar-track); border-radius: 11px; padding: 3px; gap: 2px; }
+  .seg button { all: unset; display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 9px; font-weight: 600; font-size: 13.5px; color: var(--muted); cursor: pointer; }
+  .seg button:hover { color: var(--ink); }
+  .seg button[aria-selected="true"] { background: var(--paper); color: var(--accent-ink); box-shadow: 0 1px 3px rgba(29,27,22,.12); }
+  .seg button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .cadtag { font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--accent-ink); background: var(--accent-soft); border-radius: 99px; padding: 4px 10px; }
+  .viewbar + .res-head { margin-top: 18px; }
+  .ptools { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 0 0 12px; }
+  .search { position: relative; flex: 1 1 280px; max-width: 420px; }
+  .search svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--faint); }
+  .search input { width: 100%; height: 40px; border: 1px solid var(--line); border-radius: 9px; background: var(--paper); padding: 0 12px 0 36px; }
+  .search input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 16%, transparent); }
+  .ptools .count { color: var(--muted); font-size: 13px; }
+  .ledger.ptab th.l, .ledger.ptab td.pdesc { text-align: left; }
+  .ledger.ptab td.pdesc { white-space: normal; color: var(--ink-2); min-width: 220px; max-width: 360px; font-size: 13px; }
+  .ledger.ptab td.pcell .exp span { font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
+  .otab td.onb { padding: 0; }
+  .otab td.onb .exp { padding: 8px 12px; gap: 6px; font-weight: 700; color: var(--accent-ink); }
+  .otab td.onb .exp .chev { width: 13px; height: 13px; }
+  .otab tr.open > td { background: var(--hover); }
+  .otab tr.odet > td { padding: 2px 10px 12px 26px; background: var(--hover); white-space: normal; }
+  .otab tfoot td { font-weight: 700; border-top: 1px solid var(--line); border-bottom: 0; background: var(--paper); }
+  .orders.lines { margin: 0; border-color: color-mix(in srgb, var(--accent) 30%, var(--line)); max-height: none; }
+  .ltab th { background: var(--accent-soft); }
+  .otab td.pn { font-weight: 600; font-variant-numeric: tabular-nums; }
+  .otab td.sp { font-weight: 600; }
+  .otab td.cur { color: var(--muted); font-size: 12px; }
+  .otab tr.dsub td { background: var(--row); font-weight: 700; font-size: 12.5px; border-bottom: 1px solid var(--line); color: var(--ink); }
+  .otab tr.dsub td:first-child { padding-left: 34px; } .otab tr.dsub td span { font-weight: 500; color: var(--muted); }
+  .ptag { font-size: 10px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--warn); background: var(--warn-soft); border-radius: 5px; padding: 1px 5px; margin-left: 4px; vertical-align: 1px; }
+  .empty-lines { padding: 12px 14px; color: var(--muted); font-size: 13px; }
+  .recon { padding: 8px 12px; font-size: 12px; color: var(--warn); background: var(--warn-soft); border-top: 1px solid var(--line-2); }
+  .note { color: var(--warn); background: var(--warn-soft); border-radius: 9px; padding: 8px 12px; font-size: 13px; margin-top: 12px; }
+  .placeholder { text-align: center; color: var(--muted); padding: 60px 20px; border: 1px dashed var(--line); border-radius: var(--r); }
+  .skeleton { height: 46px; border-radius: 8px; margin: 8px; background: linear-gradient(90deg, var(--row), var(--hover), var(--row)); background-size: 200% 100%; animation: sk 1.2s infinite linear; }
+  @keyframes sk { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+  .tools { display: flex; gap: 6px; margin-left: auto; }
+
+  @media (max-width: 760px) {
+    .top-in, main { padding-left: 14px; padding-right: 14px; }
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .stat:nth-child(3) { border-left: 0; } .stat:nth-child(n+3) { border-top: 1px solid var(--line-2); }
+    .ledger td.barc, .ledger th.barc { display: none; }
+    .b.lbl span { display: none; }
+    .arrow { display: none; } .pick fieldset { flex: 1 1 100%; } .pick .pair select { flex: 1; }
+  }
+  @media print {
+    @page { size: letter portrait; margin: 12mm; }
+    html, body { background: #fff !important; color: #000; font-size: 10.5px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    header.top, .range, .tools, .ledger td.barc, .ledger th.barc, .exp .chev, .note, .seg, .ptools { display: none !important; }
+    .viewbar { margin: 0 0 4px; } .cadtag { padding: 0; background: none; }
+    .otab td.onb .exp { padding: 4px 6px; } .otab tr.odet > td { padding: 2px 4px 6px 12px; } .recon { font-size: 9px; }
+    .ledger.ptab td.pdesc { min-width: 0; font-size: 9.5px; } .otab td.cur { font-size: 8.5px; }
+    main { max-width: none; padding: 0; }
+    .res-head { margin: 0 0 8px; } .res-head h2 { font-size: 18px; }
+    .stats { grid-template-columns: repeat(4, 1fr) !important; box-shadow: none; margin-bottom: 10px; break-inside: avoid; }
+    .stat { padding: 8px 10px; border-top: 0 !important; border-left: 1px solid var(--line-2) !important; }
+    .stat:first-child { border-left: 0 !important; }
+    .stat .v { font-size: 17px; } .stat .k { font-size: 9px; } .stat .h { font-size: 9.5px; }
+    .ledger-wrap, .orders { overflow: visible !important; max-height: none !important; box-shadow: none; }
+    table.ledger { min-width: 0 !important; width: 100%; table-layout: auto; }
+    .ledger th, .ledger td { padding: 5px 7px; font-size: 10.5px; position: static !important; }
+    .ledger thead th { font-size: 8.5px; letter-spacing: .04em; white-space: normal; }
+    .ledger thead, .ledger tfoot { display: table-row-group; }
+    .ledger tr, .otab tr { break-inside: avoid; }
+    .ledger tr.det { break-inside: auto; } .ledger tr.det > td { display: table-cell; }
+    .exp { padding: 5px 7px; gap: 0; }
+    .ledger tfoot td { padding-top: 7px; padding-bottom: 7px; } .ledger tfoot td:first-child { font-size: 12px; }
+    .ledger tr.det > td { padding: 0 0 8px; }
+    .orders { margin: 0 6px; }
+    .otab th, .otab td { padding: 4px 6px; font-size: 9px; }
+    .otab td.info { min-width: 0; max-width: none; }
+  }
+</style>
+</head>
+<body>
+<script src="../nav.js"></script>
+
+<!-- ============ Login ============ -->
+<section id="login">
+  <div class="login-art">
+    <small>Armodilo · Internal</small>
+    <div><h1>Month by month.</h1><p>Pick a range, get a clean monthly breakdown with the grand total at the bottom.</p></div>
+    <svg class="ledger" viewBox="0 0 200 160" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+      <path d="M10 20h180M10 50h180M10 80h180M10 110h180M10 140h180"/><rect x="10" y="26" width="90" height="18" rx="4" fill="currentColor"/>
+      <rect x="10" y="56" width="140" height="18" rx="4" fill="currentColor"/><rect x="10" y="86" width="60" height="18" rx="4" fill="currentColor"/><rect x="10" y="116" width="120" height="18" rx="4" fill="currentColor"/>
+    </svg>
+  </div>
+  <div class="login-form">
+    <form id="loginForm" autocomplete="on">
+      <h2>Sign in</h2>
+      <p class="sub">Monthly Summary</p>
+      <label class="f" for="u">Username</label>
+      <input class="t" id="u" name="username" autocomplete="username" required>
+      <label class="f" for="p">Password</label>
+      <input class="t" id="p" name="password" type="password" autocomplete="current-password" required>
+      <button class="b primary wide" id="loginBtn" type="submit">Sign in</button>
+      <p class="err" id="loginErr" role="alert"></p>
+    </form>
+  </div>
+</section>
+
+<!-- ============ App ============ -->
+<section id="app" class="hidden">
+  <header class="top">
+    <div class="top-in">
+      <span class="mark" aria-hidden="true">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
+      </span>
+      <div class="brand"><b>Monthly Summary</b><div class="sync" id="sync">Connecting…</div></div>
+      <div class="grow"></div>
+      <button class="b icon" id="refreshBtn" type="button" title="Refresh data from the sheets" aria-label="Refresh data">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg></button>
+      <button class="b icon" id="themeBtn" type="button" title="Switch theme" aria-label="Switch theme">
+        <svg class="moon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>
+        <svg class="sun" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></button>
+      <button class="b icon" id="logoutBtn" type="button" title="Sign out" aria-label="Sign out">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/><path d="M10 17l-5-5 5-5M5 12h11"/></svg></button>
+    </div>
+  </header>
+
+  <main>
+    <section class="range" aria-labelledby="rangeTitle">
+      <h1 id="rangeTitle">Choose a date range</h1>
+      <p class="sub" id="rangeSub">Pick a start and end date. Every month in the range gets its own row.</p>
+      <form class="pick" id="rangeForm">
+        <fieldset><legend>From</legend><div class="pair">
+          <select class="s m" id="fm" aria-label="From month"></select><select class="s d" id="fd" aria-label="From day"></select><select class="s y" id="fy" aria-label="From year"></select></div></fieldset>
+        <span class="arrow" aria-hidden="true">→</span>
+        <fieldset><legend>To</legend><div class="pair">
+          <select class="s m" id="tm" aria-label="To month"></select><select class="s d" id="td" aria-label="To day"></select><select class="s y" id="ty" aria-label="To year"></select></div></fieldset>
+        <button class="b primary" id="runBtn" type="submit">Summarize</button>
+      </form>
+      <div class="presets" id="presets" role="group" aria-label="Quick ranges">
+        <button class="chip" type="button" data-p="ytd">Year to date</button>
+        <button class="chip" type="button" data-p="last12">Last 12 months</button>
+        <button class="chip" type="button" data-p="lastq">Last quarter</button>
+        <button class="chip" type="button" data-p="lasty">Last year</button>
+        <button class="chip" type="button" data-p="all">All data</button>
+      </div>
+    </section>
+
+    <div id="result">
+      <div class="placeholder" id="placeholder">Pick a range above and press <b>Summarize</b>.</div>
+    </div>
+  </main>
+</section>
+
+<script>
+(() => {
+  // ====== CONFIG ======
+  const API_URL = 'https://script.google.com/macros/s/AKfycbzyQmApvKdCjgf9yc3hVR0rA5qRZoJl45RzEIlyAO-QtT9QBJBlS0sFkvdd7J76yShD8A/exec';
+  // ====================
+
+  const $ = id => document.getElementById(id);
+  const store = {
+    get: k => { try { return sessionStorage.getItem(k); } catch (e) { return null; } },
+    set: (k, v) => { try { sessionStorage.setItem(k, v); } catch (e) {} },
+    del: k => { try { sessionStorage.removeItem(k); } catch (e) {} }
+  };
+  const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+  const ymOf = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+  const addM = (ym, n) => { const [y, m] = ym.split('-').map(Number); return ymOf(new Date(y, m - 1 + n, 1)); };
+  const label = ym => { const [y, m] = ym.split('-').map(Number); return MONTHS[m - 1] + ' ' + y; };
+  const pad2 = n => String(n).padStart(2, '0');
+  const daysIn = (y, m) => new Date(y, m, 0).getDate();
+  const ord = n => n + ((n % 100 >= 11 && n % 100 <= 13) ? 'th' : (['th', 'st', 'nd', 'rd'][n % 10] || 'th'));
+  const firstDay = ym => ym.slice(0, 7) + '-01';
+  const lastDay = ym => { const [y, m] = ym.slice(0, 7).split('-').map(Number); return ym.slice(0, 7) + '-' + pad2(daysIn(y, m)); };
+  const longDate = d => { const [y, m, dd] = d.split('-').map(Number); return MONTHS[m - 1] + ' ' + ord(dd) + ', ' + y; };
+
+  let token = store.get('ms_token');
+  let meta = null, last = null, barCol = null;
+  let full = null, loading = null;   // all data, loaded once per session; ranges are sliced in the browser
+  let view = store.get('ms_view') === 'part' ? 'part' : 'month';
+  let partQuery = '', partSort = store.get('ms_psort') || 'units';
+  let byOrder = {}, parts = [], partMonths = [];
+  const openMonths = new Set(), openOrders = new Set(), openParts = new Set(), openPMonths = new Set();
+
+  async function api(payload) {
+    // text/plain avoids a CORS preflight, which Apps Script doesn't support.
+    const res = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload), redirect: 'follow', cache: 'no-store', credentials: 'omit' });
+    if (!res.ok) throw new Error('Network error ' + res.status);
+    const text = await res.text();
+    let r;
+    try { r = JSON.parse(text); }
+    catch (e) {
+      const m = text.match(/Script function not found: (\w+)/);
+      throw new Error(m ? 'The Apps Script deployment is still running old code (no ' + m[1] + '). In Apps Script: Deploy → Manage deployments → edit → Version: New version → Deploy.'
+                        : 'The server replied with something other than the Monthly Summary script. Check the Apps Script deployment.');
+    }
+    if (r && r.auth === false) { showLogin(r.error); throw new Error('auth'); }
+    return r;
+  }
+
+  // ---------- Formatting ----------
+  const isMoney = h => /(\$|amount|total|value|revenue|sales|price|cost|subtotal|paid|invoice|tax|hst|gst|fee|shipping|freight|discount|cad|usd)/i.test(h);
+  const isCount = h => /(qty|quantity|units|count|pcs|pieces)/i.test(h);
+  // Sheet headers → proper wording ("order_no" → "Order Number", "sales_price_cdn" → "Sales Price (CAD)")
+  const NICE = { orderno: 'Order Number', ordernumber: 'Order Number', orderdate: 'Order Date', partno: 'Part Number', partnumber: 'Part Number',
+    description: 'Description', custno: 'Customer Number', custname: 'Customer Name', customer: 'Customer', refno: 'Reference Number',
+    currency: 'Currency', currencyrate: 'Exchange Rate', orderqty: 'Quantity', qty: 'Quantity', unitcdn: 'Unit Price (CAD)', unitcad: 'Unit Price (CAD)',
+    linedisc: 'Discount (%)', salespricecdn: 'Sales Price (CAD)', salepricecdn: 'Sales Price (CAD)', date: 'Date' };
+  const nice = h => { const k = String(h || '').toLowerCase().replace(/[^a-z0-9]/g, ''); if (NICE[k]) return NICE[k];
+    return String(h || '').replace(/_/g, ' ').replace(/\b(cdn|cad)\b/ig, '(CAD)').replace(/\s+/g, ' ').trim().replace(/\b([a-z])/g, c => c.toUpperCase()); };
+  function fmt(v, h) {
+    if (isMoney(h)) return Number(v).toLocaleString('en-CA', { style: 'currency', currency: 'CAD', currencyDisplay: 'narrowSymbol', minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    return Number(v).toLocaleString('en-CA', { maximumFractionDigits: isCount(h) ? 0 : 2 });
+  }
+  function short(v, h) {
+    const a = Math.abs(v), p = isMoney(h) ? '$' : '';
+    if (a >= 1e6) return p + (v / 1e6).toLocaleString('en-CA', { maximumFractionDigits: 2 }) + 'M';
+    if (a >= 1e5) return p + (v / 1e3).toLocaleString('en-CA', { maximumFractionDigits: 0 }) + 'k';
+    return fmt(v, h);
+  }
+
+  // ---------- Range picker ----------
+  function fillSelects() {
+    const now = new Date(), cy = now.getFullYear();
+    let y0 = cy - 5, y1 = cy;
+    if (meta && meta.first) y0 = Math.min(y0, +meta.first.slice(0, 4));
+    if (meta && meta.last) y1 = Math.max(y1, +meta.last.slice(0, 4));
+    const mo = MONTHS.map((n, i) => `<option value="${String(i + 1).padStart(2, '0')}">${n}</option>`).join('');
+    let yo = ''; for (let y = y1; y >= y0; y--) yo += `<option value="${y}">${y}</option>`;
+    ['fm','tm'].forEach(id => { const v = $(id).value; $(id).innerHTML = mo; if (v) $(id).value = v; });
+    ['fy','ty'].forEach(id => { const v = $(id).value; $(id).innerHTML = yo; if (v) $(id).value = v; });
+  }
+  // Day dropdown follows the chosen month/year (1st … 28th/29th/30th/31st)
+  function fillDays(x) {
+    const y = +$(x + 'y').value, m = +$(x + 'm').value; if (!y || !m) return;
+    const n = daysIn(y, m), keep = +$(x + 'd').value || 1;
+    let o = ''; for (let d = 1; d <= n; d++) o += `<option value="${pad2(d)}">${ord(d)}</option>`;
+    $(x + 'd').innerHTML = o; $(x + 'd').value = pad2(Math.min(keep, n));
+  }
+  const getRange = () => ({ from: $('fy').value + '-' + $('fm').value + '-' + ($('fd').value || '01'), to: $('ty').value + '-' + $('tm').value + '-' + ($('td').value || '01') });
+  // Accepts YYYY-MM (from → 1st of the month, to → last day) or YYYY-MM-DD
+  function setRange(from, to) {
+    from = from.length === 7 ? firstDay(from) : from; to = to.length === 7 ? lastDay(to) : to;
+    fillSelectsFor(from, to);
+    $('fy').value = from.slice(0, 4); $('fm').value = from.slice(5, 7); fillDays('f'); $('fd').value = from.slice(8, 10);
+    $('ty').value = to.slice(0, 4); $('tm').value = to.slice(5, 7); fillDays('t'); $('td').value = to.slice(8, 10);
+  }
+  function fillSelectsFor(from, to) { // make sure both years exist in the dropdowns
+    [from, to].forEach(ym => { const y = ym.slice(0, 4);
+      ['fy','ty'].forEach(id => { if (![...$(id).options].some(o => o.value === y)) {
+        const o = new Option(y, y); const opts = [...$(id).options]; const after = opts.find(x => +x.value < +y);
+        $(id).add(o, after || null); } }); });
+  }
+  function preset(p) {
+    const cur = ymOf(new Date());
+    const q0 = (() => { const d = new Date(); const qm = Math.floor(d.getMonth() / 3) * 3; return ymOf(new Date(d.getFullYear(), qm - 3, 1)); })();
+    const y = new Date().getFullYear();
+    const r = { ytd: [y + '-01', cur], last12: [addM(cur, -11), cur], lastq: [q0, addM(q0, 2)], lasty: [(y - 1) + '-01', (y - 1) + '-12'],
+                all: [meta && meta.first || addM(cur, -11), meta && meta.last || cur] }[p];
+    if (r) setRange(firstDay(r[0]), lastDay(r[1]));
+    markPreset();
+  }
+  function markPreset() {
+    const { from, to } = getRange(), cur = ymOf(new Date()), y = new Date().getFullYear();
+    const q0 = (() => { const d = new Date(); return ymOf(new Date(d.getFullYear(), Math.floor(d.getMonth() / 3) * 3 - 3, 1)); })();
+    const m = { ytd: [y + '-01', cur], last12: [addM(cur, -11), cur], lastq: [q0, addM(q0, 2)], lasty: [(y - 1) + '-01', (y - 1) + '-12'],
+                all: [meta && meta.first, meta && meta.last] };
+    document.querySelectorAll('#presets .chip').forEach(c => { const v = m[c.dataset.p]; c.setAttribute('aria-pressed', String(!!v && !!v[0] && !!v[1] && firstDay(v[0]) === from && lastDay(v[1]) === to)); });
+  }
+  $('presets').addEventListener('click', e => { const c = e.target.closest('.chip'); if (!c) return; preset(c.dataset.p); run(); });
+  ['fm','fy','tm','ty'].forEach(id => $(id).addEventListener('change', () => { fillDays(id[0]); markPreset(); }));
+  ['fd','td'].forEach(id => $(id).addEventListener('change', markPreset));
+  $('rangeForm').addEventListener('submit', e => { e.preventDefault(); run(); });
+
+  // ---------- Load everything once ----------
+  function loadAll(fresh) {
+    $('refreshBtn').classList.add('spin'); $('sync').textContent = fresh ? 'Refreshing data from the sheets…' : 'Loading data…';
+    loading = api({ action: 'all', token, fresh: !!fresh }).then(r => {
+      if (r && r.ok) {
+        full = r;
+        const t = new Date(r.cachedAt || r.updated || Date.now()).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+        $('sync').textContent = 'Sheets: ' + (r.sheet || '—') + (r.linesSheet ? ' + ' + r.linesSheet : '') + ' · data as of ' + t;
+        return r;
+      }
+      if (r && /unknown action/i.test(r.error || '')) { full = false; $('sync').textContent = 'Connected'; return null; } // older script: per-range loading
+      throw new Error((r && r.error) || 'Could not load the data.');
+    }).finally(() => $('refreshBtn').classList.remove('spin'));
+    return loading;
+  }
+  function sliceRange(F, from, to) {
+    const fy = from.slice(0, 7), ty = to.slice(0, 7), byM = {};
+    F.months.forEach(m => { byM[m.month] = m; });
+    const yms = []; let [y, m] = fy.split('-').map(Number); const [Y, M] = ty.split('-').map(Number);
+    while ((y < Y || (y === Y && m <= M)) && yms.length < 1200) { yms.push(y + '-' + pad2(m)); if (++m > 12) { m = 1; y++; } }
+    const zero = () => (F.numIdx || []).map(() => 0);
+    const r = Object.assign({}, F, { from: fy, to: ty, total: null,
+      months: yms.map(k => byM[k] ? { month: k, count: byM[k].count, sums: byM[k].sums.slice(), orders: byM[k].orders } : { month: k, count: 0, sums: zero(), orders: [] }),
+      lines: F.lines ? F.lines.map(l => l.slice()) : F.lines });
+    applyDays(r, from, to, true);
+    return r;
+  }
+  $('refreshBtn').addEventListener('click', async () => {
+    if (!token) return;
+    try { await loadAll(true); if (last) run(); } catch (err) { if (err.message !== 'auth') $('sync').textContent = 'Couldn’t refresh: ' + err.message; }
+  });
+
+  // ---------- Summary ----------
+  async function run() {
+    let { from, to } = getRange();
+    if (from > to) { [from, to] = [to, from]; setRange(from, to); }
+    markPreset();
+    store.set('ms_range', from + '|' + to);
+    const dFrom = from, dTo = to;
+    $('runBtn').disabled = true;
+    $('result').innerHTML = '<div class="ledger-wrap">' + '<div class="skeleton"></div>'.repeat(5) + '</div>';
+    try {
+      if (full === null) { try { await (loading || loadAll(false)); } catch (err) { if (err.message === 'auth') throw err; full = false; } }
+      let r;
+      if (full) r = sliceRange(full, dFrom, dTo);
+      else {
+        r = await api({ action: 'summary', token, from: from.slice(0, 7), to: to.slice(0, 7) });
+        if (!r.ok) { $('result').innerHTML = `<div class="placeholder">${esc(r.error || 'Could not build the summary.')}</div>`; return; }
+        applyDays(r, dFrom, dTo);
+      }
+      if (!last || last.dFrom !== r.dFrom || last.dTo !== r.dTo) { openMonths.clear(); openOrders.clear(); openParts.clear(); openPMonths.clear(); }
+      last = r; prepare(r);
+      if (!barCol || r.columns.indexOf(barCol) < 0) barCol = pickPrimary(r.columns);
+      render();
+      if (!full) $('sync').textContent = 'Sheets: ' + (r.sheet || '—') + (r.linesSheet ? ' + ' + r.linesSheet : '') + ' · updated ' + new Date(r.updated || Date.now()).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+    } catch (err) {
+      if (err.message !== 'auth') $('result').innerHTML = '<div class="placeholder">Could not reach the server. Check your connection and try again.</div>';
+    } finally { $('runBtn').disabled = false; }
+  }
+  // Keep only orders and part lines dated within the exact days picked; recompute month and grand totals
+  function applyDays(r, from, to, force) {
+    r.dFrom = from; r.dTo = to;
+    if (!force && from === firstDay(from) && to === lastDay(to)) return; // whole months: server totals already exact
+    const di = r.dateIdx, num = r.numIdx || [], rd = x => Math.round(x * 100) / 100;
+    const inD = d => { d = String(d).slice(0, 10); return d >= from && d <= to; };
+    r.total = { count: 0, sums: num.map(() => 0) };
+    r.months.forEach(m => {
+      m.orders = m.orders.filter(row => inD(row[di])); m.count = m.orders.length;
+      m.sums = num.map(ci => rd(m.orders.reduce((a, row) => { const n = Number(row[ci]); return a + (isFinite(n) ? n : 0); }, 0)));
+      r.total.count += m.count; m.sums.forEach((v, i) => { r.total.sums[i] += v; });
+    });
+    r.total.sums = r.total.sums.map(rd);
+    if (r.lines) r.lines.forEach(l => { l[11] = inD(l[1]) ? 1 : 0; });
+  }
+
+  // Headline figure: Net Sales first; never a tax column unless nothing else exists.
+  const PRIMARY = [/net\s*sales/i, /\bnet\b/i, /sub\s*total/i, /sales|revenue/i, /^(?!.*tax).*total/i, /amount|value/i];
+  const pickPrimary = cols => { for (const re of PRIMARY) { const c = cols.find(h => re.test(h)); if (c) return c; }
+    return cols.find(h => isMoney(h) && !/tax|hst|gst|pst|vat/i.test(h)) || cols.find(isMoney) || cols[0] || null; };
+
+  // ---------- Shared helpers ----------
+  const cad = v => Number(v || 0).toLocaleString('en-CA', { style: 'currency', currency: 'CAD', currencyDisplay: 'narrowSymbol', minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const int = v => Number(v || 0).toLocaleString('en-CA', { maximumFractionDigits: 2 });
+  const pct = v => v ? int(v) + '%' : '—';
+  const chev = '<svg class="chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 4l4 4-4 4"/></svg>';
+  const toggle = (set, k) => set.has(k) ? set.delete(k) : set.add(k);
+  const btn = (act, k, open, inner, title, disabled) =>
+    `<button type="button" class="exp" data-act="${act}" data-k="${esc(k)}" aria-expanded="${!!open}" ${disabled ? 'disabled' : ''} title="${esc(title)}">${chev}<span>${inner}</span></button>`;
+  // line: [orderKey, date, part, desc, cust, qty, unitCAD, disc, saleCAD, currency, rate, inRange]
+  const L = { key: 0, date: 1, part: 2, desc: 3, cust: 4, qty: 5, unit: 6, disc: 7, sale: 8, cur: 9, rate: 10, inr: 11 };
+
+  // Group part lines into parts (each with its orders)
+  function groupParts(lines) {
+    const map = {};
+    lines.forEach(l => {
+      const p = l[L.part] || '(no part number)';
+      const e = map[p] = map[p] || { part: p, desc: '', qty: 0, sale: 0, orders: {}, custs: new Set() };
+      e.qty += l[L.qty]; e.sale += l[L.sale]; if (l[L.cust]) e.custs.add(l[L.cust]);
+      if (l[L.desc]) { e.descs = e.descs || {}; e.descs[l[L.desc]] = (e.descs[l[L.desc]] || 0) + 1; }
+      const o = e.orders[l[L.key]] = e.orders[l[L.key]] || { key: l[L.key], date: l[L.date], cust: l[L.cust], qty: 0, gross: 0, sale: 0, discs: new Set(), cur: l[L.cur], rate: l[L.rate] };
+      o.qty += l[L.qty]; o.sale += l[L.sale]; o.gross += l[L.qty] * l[L.unit]; o.discs.add(l[L.disc]);
+    });
+    return Object.values(map).map(e => Object.assign(e, { desc: e.descs ? Object.keys(e.descs).sort((a, b) => e.descs[b] - e.descs[a])[0] : '', orderList: Object.values(e.orders).sort((a, b) => String(a.date).localeCompare(String(b.date)) || String(a.key).localeCompare(String(b.key), undefined, { numeric: true })) }));
+  }
+
+  function prepare(r) {
+    byOrder = {}; parts = []; partMonths = [];
+    if (!r.lines) return;
+    r.lines.forEach(l => { (byOrder[l[L.key]] = byOrder[l[L.key]] || []).push(l); });
+    const inr = r.lines.filter(l => l[L.inr]);
+    parts = groupParts(inr);
+    const byM = {};
+    inr.forEach(l => { const ym = String(l[L.date]).slice(0, 7); (byM[ym] = byM[ym] || []).push(l); });
+    partMonths = r.months.map(m => ({ month: m.month, parts: groupParts(byM[m.month] || []) }));
+  }
+
+  // ---------- Shell: view switch + heading + tools ----------
+  function shell(tools, sub) {
+    const r = last, range = r.dFrom ? (r.dFrom === r.dTo ? longDate(r.dFrom) : longDate(r.dFrom) + ' – ' + longDate(r.dTo)) : (r.from === r.to ? label(r.from) : label(r.from) + ' – ' + label(r.to));
+    const cur = r.currency || {};
+    const curNote = cur.mode === 'convert' && cur.converted ? ` · ${cur.converted.toLocaleString('en-CA')} foreign-currency order${cur.converted === 1 ? '' : 's'} converted at the order's rate` : '';
+    return `<div class="viewbar"><div class="seg" role="tablist" aria-label="Organize by">
+        <button type="button" role="tab" data-act="view" data-k="month" aria-selected="${view === 'month'}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>By Order Number</button>
+        <button type="button" role="tab" data-act="view" data-k="part" aria-selected="${view === 'part'}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M21 8 12 3 3 8v8l9 5 9-5z"/><path d="m3 8 9 5 9-5M12 13v8"/></svg>By Part Number</button>
+      </div><span class="cadtag">All amounts in CAD</span></div>
+      <div class="res-head"><h2>${esc(range)}</h2><span class="meta">${esc(sub + curNote)}</span>
+        <div class="tools">${tools}
+          <button class="b lbl" data-act="csv" type="button" title="Download CSV"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg><span>CSV</span></button>
+          <button class="b lbl" data-act="print" type="button" title="Print"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M7 9V3h10v6M7 17H4v-7h16v7h-3M7 14h10v7H7z"/></svg><span>Print</span></button>
+        </div></div>`;
+  }
+
+  function render() { view === 'part' ? renderPartView() : renderMonthView(); }
+
+  // ---------- Parts inside one order ----------
+  function orderLines(key, netVal, partial) {
+    const ls = byOrder[key] || [];
+    if (!ls.length) return '<div class="orders lines empty-lines">No part lines found for this order in the parts sheet.</div>';
+    const foreign = ls.some(l => l[L.cur] !== 'CAD');
+    const q = ls.reduce((a, l) => a + l[L.qty], 0), t = ls.reduce((a, l) => a + l[L.sale], 0);
+    const rows = ls.map(l => `<tr><td class="pn">${esc(l[L.part] || '—')}</td><td class="info">${esc(l[L.desc])}</td><td class="r">${int(l[L.qty])}</td>
+      <td class="r">${cad(l[L.unit])}</td><td class="r">${pct(l[L.disc])}</td><td class="r sp">${cad(l[L.sale])}</td>${foreign ? `<td class="cur">${l[L.cur] === 'CAD' ? 'CAD' : esc(l[L.cur]) + ' · rate ' + int(l[L.rate])}</td>` : ''}</tr>`).join('');
+    const diff = netVal == null ? null : Math.round((netVal - t) * 100) / 100;
+    return `<div class="orders lines"><table class="otab ltab"><thead><tr><th>Part Number</th><th>Description</th><th class="r">Quantity</th><th class="r">Unit Price</th><th class="r">Discount</th><th class="r">Sales Price</th>${foreign ? '<th>Billed In</th>' : ''}</tr></thead>
+      <tbody>${rows}</tbody><tfoot><tr><td colspan="2">${ls.length} part${ls.length === 1 ? '' : 's'}</td><td class="r">${int(q)}</td><td></td><td></td><td class="r">${cad(t)}</td>${foreign ? '<td></td>' : ''}</tr></tfoot></table>
+      ${partial ? `<div class="recon">This row is a partial invoice of ${cad(netVal)}. Order ${esc(key)} totals ${cad(t)} across all its parts above.</div>`
+        : diff !== null && Math.abs(diff) >= 1 ? `<div class="recon">Order Net Sales ${cad(netVal)} · Parts Total ${cad(t)} · Difference ${cad(diff)}</div>` : ''}</div>`;
+  }
+
+  // ---------- Orders inside one month ----------
+  function ordersTable(m) {
+    const r = last, F = r.fields || [], di = r.dateIdx, oi = r.orderIdx, num = r.numIdx || [], K = F.length;
+    const used = i => F[i] && m.orders.some(row => row[i] !== '' && row[i] != null);
+    const mi = F.indexOf('__match');
+    const info = F.map((h, i) => i).filter(i => i !== di && i !== oi && i !== mi && num.indexOf(i) < 0 && used(i) && !/^(currency|currencyrate|exchangerate|fxrate|rate|refno)$/.test(String(F[i]).toLowerCase().replace(/[^a-z]/g, '')));
+    const amts = num.filter(i => used(i) && !/rate$/i.test(F[i]));
+    const netI = num.find(i => /net/i.test(F[i])) ?? num.find(i => /sub[\s_]*total/i.test(F[i]));
+    const hasLines = !!r.lines;
+    const cols = 2 + info.length + amts.length;
+    const head = `<tr><th>${oi >= 0 ? esc(nice(F[oi])) : '#'}</th><th>${esc(nice(F[di] || 'Date'))}</th>` +
+      info.map(i => `<th>${esc(nice(F[i]))}</th>`).join('') + amts.map(i => `<th class="r">${esc(nice(F[i]))}</th>`).join('') + '</tr>';
+    const val = (v, h) => { const n = typeof v === 'number' ? v : Number(String(v).replace(/[$,\s]/g, '')); return v === '' ? '—' : isFinite(n) ? fmt(n, h) : String(v); };
+    // Subtotal row after each day's orders
+    const daySub = (d, list) => {
+      const sums = amts.map(i => list.reduce((a, row) => { const n = typeof row[i] === 'number' ? row[i] : Number(String(row[i]).replace(/[$,\s]/g, '')); return a + (isFinite(n) ? n : 0); }, 0));
+      const [yy, mm, dd] = String(d).split('-').map(Number);
+      const name = yy && mm && dd ? new Date(yy, mm - 1, dd).toLocaleDateString('en-CA', { weekday: 'short', month: 'short', day: 'numeric' }) : String(d);
+      return `<tr class="dsub"><td colspan="${2 + info.length}">${esc(name)} subtotal <span>· ${list.length} order${list.length === 1 ? '' : 's'}</span></td>` +
+        amts.map((i, k) => `<td class="r">${esc(fmt(Math.round(sums[k] * 100) / 100, F[i]))}</td>`).join('') + '</tr>';
+    };
+    const dayOf = row => String(row[di]).slice(0, 10);
+    const rows = m.orders.map((row, k) => {
+      const key = oi >= 0 ? row[K] : '', ls = byOrder[key] || [], open = openOrders.has(key + '|' + k) && ls.length;
+      const partial = mi >= 0 && row[mi] === 'partial';
+      const label = esc(oi >= 0 ? (row[oi] === '' ? '—' : row[oi]) : k + 1) + (partial ? ' <span class="ptag">partial</span>' : '');
+      const tip = !ls.length ? (mi >= 0 ? 'No order with this date and amount in Monthly Exploded View' : 'No part lines found')
+                : partial ? 'This invoice covers part of order ' + key + ': click to see all of that order\'s parts' : 'Show parts on this order';
+      const first = oi >= 0 && hasLines ? btn('order', key + '|' + k, open, label, tip, !ls.length) : label;
+      let h = `<tr class="${open ? 'open' : ''}"><td class="on${oi >= 0 && hasLines ? ' onb' : ''}">${first}</td><td class="dt">${esc(row[di])}</td>` +
+        info.map(i => `<td class="info">${esc(row[i])}</td>`).join('') + amts.map(i => `<td class="r">${esc(val(row[i], F[i]))}</td>`).join('') + '</tr>';
+      if (open) { const nv = netI !== undefined ? Number(row[netI]) : null; h += `<tr class="odet"><td colspan="${cols}">${orderLines(key, isFinite(nv) ? nv : null, partial)}</td></tr>`; }
+      const d = dayOf(row), next = m.orders[k + 1];
+      if (!next || dayOf(next) !== d) h += daySub(d, m.orders.filter(x => dayOf(x) === d));
+      return h;
+    }).join('');
+    return `<div class="orders"><table class="otab"><thead>${head}</thead><tbody>${rows}</tbody></table></div>`;
+  }
+
+  function linkNote(r) {
+    if (r.matched == null || !r.lines) return '';
+    const F = r.fields || [], ni = (r.numIdx || []).find(i => /net|sub[\s_]*total/i.test(F[i]));
+    let all = 0, miss = 0;
+    r.months.forEach(m => m.orders.forEach(row => { const n = ni !== undefined ? Number(row[ni]) : 1; if (!n) return; all++; if (!row[F.length]) miss++; }));
+    if (!miss) return '';
+    return `<div class="note">${miss.toLocaleString('en-CA')} of ${all.toLocaleString('en-CA')} orders in this range show “—” because Monthly View has no order number column, and their amounts don’t match any order in Monthly Exploded View (usually partial invoices or adjustments). Adding an Order Number column to Monthly View would link every order.</div>`;
+  }
+
+  // ---------- View 1: by order number ----------
+  function renderMonthView() {
+    const r = last, cols = r.columns, n = r.months.length;
+    const bi = cols.indexOf(barCol);
+    const withData = r.months.filter(m => m.count > 0).length;
+    const maxBar = bi < 0 ? r.months.reduce((a, m) => Math.max(a, m.count), 0) : r.months.reduce((a, m) => Math.max(a, Math.abs(m.sums[bi])), 0);
+    const best = r.months.reduce((a, m) => { const v = bi < 0 ? m.count : m.sums[bi]; return (!a || v > a.v) ? { m: m.month, v } : a; }, null);
+    const primTotal = bi < 0 ? r.total.count : r.total.sums[bi];
+    const primName = bi < 0 ? 'Orders' : /sub[\s_]*total/i.test(barCol) ? 'Net Sales' : nice(barCol).replace(/\s*\(CAD\)$/, '');
+    const f = v => bi < 0 ? v.toLocaleString('en-CA') : fmt(v, barCol);
+    const s = v => bi < 0 ? v.toLocaleString('en-CA') : short(v, barCol);
+
+    const stats = `<div class="stats">
+      <div class="stat"><div class="k">Months</div><div class="v num">${n}</div><div class="h">${withData} with entries</div></div>
+      <div class="stat"><div class="k">Orders</div><div class="v num">${r.total.count.toLocaleString('en-CA')}</div><div class="h">avg ${(r.total.count / n).toLocaleString('en-CA', { maximumFractionDigits: 1 })} / month</div></div>
+      <div class="stat"><div class="k" title="${esc(primName)}">${esc(primName)} total</div><div class="v num" title="${esc(f(primTotal))}">${esc(f(primTotal))}</div><div class="h">avg ${esc(s(primTotal / n))} / month${bi >= 0 && r.total.count ? ' · ' + esc(s(primTotal / r.total.count)) + ' / order' : ''}</div></div>
+      <div class="stat"><div class="k">Best Month</div><div class="v" style="font-size:20px;padding-top:4px">${best && best.v > 0 ? esc(label(best.m)) : '—'}</div><div class="h num">${best && best.v > 0 ? esc(f(best.v)) : 'no entries'}</div></div>
+    </div>`;
+
+    const head = `<tr><th scope="col">Month</th><th scope="col" class="${bi < 0 ? 'sel' : ''}"><button type="button" data-act="bar" data-k="">Orders</button></th>` +
+      cols.map(c => `<th scope="col" class="${c === barCol ? 'sel' : ''}"><button type="button" data-act="bar" data-k="${esc(c)}" title="Show bars for ${esc(nice(c))}">${esc(nice(c))}</button></th>`).join('') +
+      `<th scope="col" class="barc" aria-label="Share of ${esc(primName)}"></th></tr>`;
+
+    let body = '', prevY = null;
+    const multiYear = r.from.slice(0, 4) !== r.to.slice(0, 4);
+    r.months.forEach(m => {
+      const y = m.month.slice(0, 4);
+      if (multiYear && y !== prevY) { body += `<tr class="yr"><td colspan="${cols.length + 3}">${y}</td></tr>`; prevY = y; }
+      const v = bi < 0 ? m.count : m.sums[bi];
+      const w = maxBar ? Math.max(0, Math.round(Math.abs(v) / maxBar * 100)) : 0;
+      const isOpen = openMonths.has(m.month) && m.count > 0;
+      body += `<tr class="${m.count ? '' : 'empty'}${isOpen ? ' open' : ''}"><td class="mo">${btn('month', m.month, isOpen, `${MONTHS[+m.month.slice(5) - 1]}${multiYear ? '' : ` <small>${y}</small>`}`, m.count ? 'Show orders' : 'No orders', !m.count)}</td>
+        <td class="num">${m.count.toLocaleString('en-CA')}</td>` +
+        cols.map((c, i) => `<td class="num">${m.count ? esc(fmt(m.sums[i], c)) : '—'}</td>`).join('') +
+        `<td class="barc"><div class="bar"><i style="width:${w}%"></i></div></td></tr>`;
+      if (isOpen) body += `<tr class="det"><td colspan="${cols.length + 3}">${ordersTable(m)}</td></tr>`;
+    });
+    const foot = `<tr><td>Grand total</td><td class="num">${r.total.count.toLocaleString('en-CA')}</td>` +
+      cols.map((c, i) => `<td class="num">${esc(fmt(r.total.sums[i], c))}</td>`).join('') + `<td class="barc"></td></tr>` +
+      `<tr class="avg"><td>Monthly average</td><td class="num">${(r.total.count / n).toLocaleString('en-CA', { maximumFractionDigits: 1 })}</td>` +
+      cols.map((c, i) => `<td class="num">${esc(fmt(r.total.sums[i] / n, c))}</td>`).join('') + `<td class="barc"></td></tr>`;
+
+    const withOrders = r.months.filter(m => m.count > 0);
+    const allOpen = withOrders.length > 0 && withOrders.every(m => openMonths.has(m.month));
+    const tools = `<button class="b lbl" data-act="expand" type="button" title="${allOpen ? 'Collapse all months' : 'Show orders for every month'}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${allOpen ? '<path d="M7 14l5-5 5 5"/>' : '<path d="M7 10l5 5 5-5"/>'}</svg><span>${allOpen ? 'Collapse all' : 'Expand all'}</span></button>`;
+    $('result').innerHTML = shell(tools, (r.dateColumn ? 'Grouped by ' + nice(r.dateColumn) + ' · click a month for its orders, then an order number for its parts' : '') + (r.matched != null ? ' · order numbers matched from Monthly Exploded View by date and net sales' : '')) + `
+      ${stats}
+      <div class="ledger-wrap"><table class="ledger"><thead>${head}</thead><tbody>${body}</tbody><tfoot>${foot}</tfoot></table></div>
+      ${linkNote(r)}
+      ${r.undated ? `<div class="note">${r.undated.toLocaleString('en-CA')} ${r.undated === 1 ? 'row in the sheet has' : 'rows in the sheet have'} no readable date and aren't counted in any month.</div>` : ''}
+      ${r.lines ? '' : (r.linesFound === undefined && r.linesError === undefined
+        ? '<div class="note">The Apps Script is running the previous version, so orders can’t show their parts yet. Paste the latest code and deploy a new version.</div>'
+        : `<div class="note">Part lines couldn't be loaded${r.linesError ? ' (' + esc(r.linesError) + ')' : ''}, so orders can't show their parts.</div>`)}`;
+  }
+
+  // ---------- View 2: by part number ----------
+  function renderPartView() {
+    const r = last;
+    if (!r.lines) {
+      const oldScript = r.linesFound === undefined && r.linesError === undefined;
+      $('result').innerHTML = shell('', '') + `<div class="placeholder">${oldScript
+        ? 'The Apps Script is still running the previous version, which doesn’t send part data yet.<br>Paste the latest code, then Deploy → Manage deployments → ✏️ → New version → Deploy.'
+        : `The parts sheet couldn't be read${r.linesError ? ': ' + esc(r.linesError) : ''}.<br>Check that the script's Google account can open the Monthly Exploded View sheet.`}</div>`;
+      return;
+    }
+    const allOrders = new Set(), allCusts = new Set(); let units = 0, sales = 0;
+    r.lines.filter(l => l[L.inr]).forEach(l => { allOrders.add(l[L.key]); if (l[L.cust]) allCusts.add(l[L.cust]); units += l[L.qty]; sales += l[L.sale]; });
+    const top = parts.slice().sort((a, b) => b.qty - a.qty)[0];
+    const stats = `<div class="stats">
+      <div class="stat"><div class="k">Part Numbers</div><div class="v num">${parts.length.toLocaleString('en-CA')}</div><div class="h">${allCusts.size.toLocaleString('en-CA')} customers</div></div>
+      <div class="stat"><div class="k">Units Ordered</div><div class="v num">${int(units)}</div><div class="h">across ${allOrders.size.toLocaleString('en-CA')} orders</div></div>
+      <div class="stat"><div class="k">Total Sales</div><div class="v num">${cad(sales)}</div><div class="h">avg ${cad(allOrders.size ? sales / allOrders.size : 0)} / order</div></div>
+      <div class="stat"><div class="k">Most Ordered</div><div class="v" style="font-size:18px;padding-top:5px">${top ? esc(top.part) : '—'}</div><div class="h">${top ? int(top.qty) + ' units · ' + cad(top.sale) : 'no parts'}</div></div>
+    </div>`;
+    const ptools = `<div class="ptools"><div class="search"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="pq" type="search" placeholder="Search part number or description…" value="${esc(partQuery)}" autocomplete="off" aria-label="Search parts"></div>
+      <select class="s" id="psort" aria-label="Sort parts">
+        ${[['units', 'Most units'], ['sales', 'Highest sales'], ['orders', 'Most orders'], ['part', 'Part Number A–Z']].map(([v, t]) => `<option value="${v}" ${partSort === v ? 'selected' : ''}>Sort: ${t}</option>`).join('')}
+      </select><span class="count" id="pcount"></span></div>`;
+    const withParts = partMonths.filter(m => m.parts.length), allOpen = withParts.length > 0 && withParts.every(m => openPMonths.has(m.month));
+    const tools = `<button class="b lbl" data-act="pexpand" type="button" title="${allOpen ? 'Collapse all months' : 'Show parts for every month'}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${allOpen ? '<path d="M7 14l5-5 5 5"/>' : '<path d="M7 10l5 5 5-5"/>'}</svg><span>${allOpen ? 'Collapse all' : 'Expand all'}</span></button>`;
+    $('result').innerHTML = shell(tools, `Grouped by month, then Part Number · click a month for its parts, then a part number for the orders that bought it`) + stats + ptools + '<div id="pbody"></div>';
+    renderParts();
+  }
+
+  const PSORT = { units: (a, b) => b.qty - a.qty, sales: (a, b) => b.sale - a.sale, orders: (a, b) => b.orderList.length - a.orderList.length,
+                  part: (a, b) => a.part.localeCompare(b.part, undefined, { numeric: true }) };
+  const partMatch = (p, q) => !q || p.part.toLowerCase().includes(q) || (p.desc || '').toLowerCase().includes(q);
+
+  function renderParts() {
+    const q = partQuery.trim().toLowerCase();
+    const months = partMonths.map(m => {
+      const list = m.parts.filter(p => partMatch(p, q)).sort((a, b) => PSORT[partSort](a, b) || a.part.localeCompare(b.part, undefined, { numeric: true }));
+      const ords = new Set(); list.forEach(p => p.orderList.forEach(o => ords.add(o.key)));
+      return { month: m.month, list, qty: list.reduce((a, p) => a + p.qty, 0), sale: list.reduce((a, p) => a + p.sale, 0), orders: ords };
+    });
+    const maxS = months.reduce((a, m) => Math.max(a, Math.abs(m.sale)), 0);
+    const multiYear = last.from.slice(0, 4) !== last.to.slice(0, 4);
+    const C = 6;
+    let body = '', prevY = null;
+    months.forEach(m => {
+      const y = m.month.slice(0, 4);
+      if (multiYear && y !== prevY) { body += `<tr class="yr"><td colspan="${C}">${y}</td></tr>`; prevY = y; }
+      const has = m.list.length > 0, open = has && (openPMonths.has(m.month) || (!!q && !openPMonths.has('!' + m.month)));
+      body += `<tr class="${has ? '' : 'empty'}${open ? ' open' : ''}"><td class="mo">${btn('pmonth', m.month, open, `${MONTHS[+m.month.slice(5) - 1]}${multiYear ? '' : ` <small>${y}</small>`}`, has ? 'Show the parts ordered this month' : 'No parts', !has)}</td>
+        <td class="num">${has ? m.list.length : 0}</td><td class="num">${has ? int(m.qty) : '—'}</td><td class="num">${has ? m.orders.size : '—'}</td><td class="num">${has ? cad(m.sale) : '—'}</td>
+        <td class="barc"><div class="bar"><i style="width:${maxS ? Math.round(Math.abs(m.sale) / maxS * 100) : 0}%"></i></div></td></tr>`;
+      if (open) body += `<tr class="det"><td colspan="${C}">${monthParts(m)}</td></tr>`;
+    });
+    const tq = months.reduce((a, m) => a + m.qty, 0), ts = months.reduce((a, m) => a + m.sale, 0);
+    const tOrders = new Set(), tParts = new Set(); months.forEach(m => { m.orders.forEach(o => tOrders.add(o)); m.list.forEach(p => tParts.add(p.part)); });
+    $('pcount').textContent = q ? `${tParts.size} of ${parts.length} parts match` : '';
+    $('pbody').innerHTML = tParts.size || !q ? `<div class="ledger-wrap"><table class="ledger ptab">
+      <thead><tr><th>Month</th><th>Part Numbers</th><th>Units Ordered</th><th>Orders</th><th>Total Sales</th><th class="barc"></th></tr></thead>
+      <tbody>${body}</tbody>
+      <tfoot><tr><td>${q ? 'Total (filtered)' : 'Grand total'}</td><td class="num">${tParts.size.toLocaleString('en-CA')}</td><td class="num">${int(tq)}</td><td class="num">${tOrders.size.toLocaleString('en-CA')}</td><td class="num">${cad(ts)}</td><td class="barc"></td></tr></tfoot>
+      </table></div>` : `<div class="placeholder">No parts match “${esc(partQuery)}”.</div>`;
+  }
+
+  // One month's parts; each part number opens to the orders that bought it that month
+  function monthParts(m) {
+    const rows = m.list.map(p => {
+      const k = m.month + '|' + p.part, open = openParts.has(k);
+      let h = `<tr class="${open ? 'open' : ''}"><td class="on onb">${btn('part', k, open, esc(p.part), 'Show the orders for this part')}</td><td class="info">${esc(p.desc)}</td>
+        <td class="r">${int(p.qty)}</td><td class="r">${p.orderList.length}</td><td class="r">${p.custs.size}</td><td class="r">${p.qty ? cad(p.sale / p.qty) : '—'}</td><td class="r sp">${cad(p.sale)}</td></tr>`;
+      if (open) h += `<tr class="odet"><td colspan="7">${partOrders(p)}</td></tr>`;
+      return h;
+    }).join('');
+    return `<div class="orders"><table class="otab"><thead><tr><th>Part Number</th><th>Description</th><th class="r">Units Ordered</th><th class="r">Orders</th><th class="r">Customers</th><th class="r">Average Unit Price</th><th class="r">Total Sales</th></tr></thead>
+      <tbody>${rows}</tbody><tfoot><tr><td colspan="2">${m.list.length} part number${m.list.length === 1 ? '' : 's'}</td><td class="r">${int(m.qty)}</td><td class="r">${m.orders.size}</td><td></td><td></td><td class="r">${cad(m.sale)}</td></tr></tfoot></table></div>`;
+  }
+
+  function partOrders(p) {
+    const foreign = p.orderList.some(o => o.cur !== 'CAD');
+    const rows = p.orderList.map(o => {
+      const discs = [...o.discs].filter(d => d), unit = o.qty ? o.gross / o.qty : 0;
+      return `<tr><td class="on">${esc(o.key)}</td><td class="dt">${esc(o.date)}</td><td class="info">${esc(o.cust)}</td><td class="r">${int(o.qty)}</td>
+        <td class="r">${cad(unit)}</td><td class="r">${discs.length > 1 ? 'mixed' : pct(discs[0] || 0)}</td><td class="r sp">${cad(o.sale)}</td>
+        ${foreign ? `<td class="cur">${o.cur === 'CAD' ? 'CAD' : esc(o.cur) + ' · rate ' + int(o.rate)}</td>` : ''}</tr>`;
+    }).join('');
+    return `<div class="orders lines"><table class="otab ltab"><thead><tr><th>Order Number</th><th>Order Date</th><th>Customer Name</th><th class="r">Quantity</th><th class="r">Unit Price</th><th class="r">Discount</th><th class="r">Sales Price</th>${foreign ? '<th>Billed In</th>' : ''}</tr></thead>
+      <tbody>${rows}</tbody><tfoot><tr><td colspan="3">${p.orderList.length} order${p.orderList.length === 1 ? '' : 's'}</td><td class="r">${int(p.qty)}</td><td class="r">${p.qty ? cad(p.sale / p.qty) : ''}</td><td></td><td class="r">${cad(p.sale)}</td>${foreign ? '<td></td>' : ''}</tr></tfoot></table></div>`;
+  }
+
+  // ---------- One click handler for everything in the results ----------
+  $('result').addEventListener('click', e => {
+    const b = e.target.closest('[data-act]'); if (!b || b.disabled || !last) return;
+    const a = b.dataset.act, k = b.dataset.k;
+    const refocus = () => { const nb = document.querySelector(`[data-act="${a}"][data-k="${CSS.escape(k)}"]`); if (nb) nb.focus(); };
+    if (a === 'view') { if (view !== k) { view = k; store.set('ms_view', k); render(); refocus(); } }
+    else if (a === 'month') { toggle(openMonths, k); render(); refocus(); }
+    else if (a === 'order') { toggle(openOrders, k); render(); refocus(); }
+    else if (a === 'part') { toggle(openParts, k); renderParts(); refocus(); }
+    else if (a === 'pmonth') {
+      const isOpen = b.getAttribute('aria-expanded') === 'true';
+      if (isOpen) { openPMonths.delete(k); if (partQuery.trim()) openPMonths.add('!' + k); } else { openPMonths.add(k); openPMonths.delete('!' + k); }
+      renderParts(); refocus();
+    }
+    else if (a === 'pexpand') { const w = partMonths.filter(m => m.parts.length); if (w.every(m => openPMonths.has(m.month))) openPMonths.clear(); else w.forEach(m => openPMonths.add(m.month)); render(); }
+    else if (a === 'bar') { barCol = k || null; render(); }
+    else if (a === 'expand') { const w = last.months.filter(m => m.count > 0); if (w.every(m => openMonths.has(m.month))) openMonths.clear(); else w.forEach(m => openMonths.add(m.month)); render(); }
+    else if (a === 'csv') csv();
+    else if (a === 'print') window.print();
+  });
+  $('result').addEventListener('input', e => { if (e.target.id === 'pq') { partQuery = e.target.value; renderParts(); } });
+  $('result').addEventListener('change', e => { if (e.target.id === 'psort') { partSort = e.target.value; store.set('ms_psort', partSort); renderParts(); } });
+
+  function csv() {
+    const r = last; if (!r) return;
+    const q = v => /[",\n]/.test(String(v)) ? '"' + String(v).replace(/"/g, '""') + '"' : String(v);
+    const out = [];
+    if (view === 'part') {
+      out.push(['Month', 'Part Number', 'Description', 'Units Ordered', 'Orders', 'Customers', 'Average Unit Price (CAD)', 'Total Sales (CAD)'].map(q).join(','));
+      partMonths.forEach(m => m.parts.slice().sort((a, b) => b.qty - a.qty).forEach(p => out.push([label(m.month), p.part, p.desc, p.qty, p.orderList.length, p.custs.size, p.qty ? (p.sale / p.qty).toFixed(2) : '', p.sale.toFixed(2)].map(q).join(','))));
+    } else {
+      out.push(['Month', 'Orders', ...r.columns.map(c => { const n = nice(c); return isMoney(c) && !/cad/i.test(n) ? n + ' (CAD)' : n; })].map(q).join(','));
+      r.months.forEach(m => out.push([label(m.month), m.count, ...m.sums].map(q).join(',')));
+      out.push(['Grand total', r.total.count, ...r.total.sums].map(q).join(','));
+    }
+    const blob = new Blob([out.join('\n')], { type: 'text/csv' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `monthly-summary_${view === 'part' ? 'by-part' : 'by-month'}_${r.dFrom || r.from}_to_${r.dTo || r.to}.csv`;
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  }
+
+  // ---------- Login / session ----------
+  $('loginForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const btn = $('loginBtn'); btn.disabled = true; $('loginErr').textContent = '';
+    try {
+      const r = await api({ action: 'login', username: $('u').value, password: $('p').value });
+      $('p').value = '';
+      if (!r.ok) { $('loginErr').textContent = r.error || 'Sign in failed.'; return; }
+      token = r.token; store.set('ms_token', token); showApp();
+    } catch (err) { if (err.message !== 'auth') $('loginErr').textContent = /^(Network error|Failed to fetch|Load failed|NetworkError)/.test(err.message) || err instanceof TypeError ? 'No usable reply from the Apps Script. If you just changed the script: Deploy → Manage deployments → edit → New version, with access set to Anyone.' : err.message; }
+    finally { btn.disabled = false; }
+  });
+
+  function showLogin(msg) {
+    token = null; store.del('ms_token'); last = null; meta = null; full = null; loading = null;
+    $('app').classList.add('hidden'); $('login').classList.remove('hidden');
+    $('loginErr').textContent = msg || ''; $('u').focus();
+  }
+
+  async function showApp() {
+    $('login').classList.add('hidden'); $('app').classList.remove('hidden');
+    fillSelects();
+    full = null; loadAll(false).catch(() => {});
+    const saved = (store.get('ms_range') || '').split('|');
+    if (saved.length === 2 && /^\d{4}-\d{2}(-\d{2})?$/.test(saved[0]) && /^\d{4}-\d{2}(-\d{2})?$/.test(saved[1])) setRange(saved[0], saved[1]); else preset('ytd');
+    markPreset();
+    try {
+      const m = await api({ action: 'meta', token });
+      if (m.ok) {
+        meta = m; const { from, to } = getRange(); fillSelects(); setRange(from, to); markPreset();
+        if (!full) $('sync').textContent = 'Sheet: ' + m.sheet + ' · ' + (m.rows || 0).toLocaleString('en-CA') + ' dated rows · loading data…';
+        if (m.first && m.last) $('rangeSub').textContent = `Pick a start and end date. Data runs from ${label(m.first)} to ${label(m.last)}.`;
+      } else $('sync').textContent = m.error || 'Connected';
+    } catch (err) { if (err.message !== 'auth') $('sync').textContent = 'Offline'; }
+  }
+
+  $('logoutBtn').addEventListener('click', () => { if (token) api({ action: 'logout', token }).catch(() => {}); showLogin(); });
+
+  // ---------- Theme ----------
+  const sysDark = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : { matches: false };
+  const isDark = () => { const t = document.documentElement.getAttribute('data-theme'); return t ? t === 'dark' : sysDark.matches; };
+  const syncTheme = () => document.body.classList.toggle('is-dark', isDark());
+  $('themeBtn').addEventListener('click', () => {
+    const next = isDark() ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    try { localStorage.setItem('ms_theme', next); } catch (e) {}
+    syncTheme();
+  });
+  if (sysDark.addEventListener) sysDark.addEventListener('change', syncTheme);
+  syncTheme();
+
+  if (token) showApp(); else $('u').focus();
+})();
+</script>
+</body>
+</html>
