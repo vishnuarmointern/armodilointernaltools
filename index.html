@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com; form-action 'none'; base-uri 'none'">
+<title>Armodilo Tools</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f7f4ee; --card:#fffdf9; --ink:#1d1c1a; --ink2:#59564f; --muted:#8a867d;
+  --line:#e7e1d6; --accent:#1f5a43; --accent-soft:#e1ebe5;
+  --sans:Inter,system-ui,-apple-system,"Segoe UI",Arial,sans-serif;
+  --serif:"Source Serif 4",Georgia,serif;
+}
+@media (prefers-color-scheme:dark){
+  :root{ --bg:#141513; --card:#1c1e1b; --ink:#efede8; --ink2:#c5c2ba; --muted:#918e86;
+    --line:#2f322d; --accent:#63b591; --accent-soft:#22332b; color-scheme:dark; }
+}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans)}
+.wrap{max-width:920px;margin:0 auto;padding:56px 24px 72px}
+.head{display:flex;align-items:center;gap:18px;flex-wrap:wrap;padding-bottom:28px;border-bottom:1px solid var(--line)}
+.head img{height:38px;width:auto;background:#fff;padding:7px 11px;border-radius:6px;border:1px solid var(--line)}
+.eyebrow{font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+h1{font:600 clamp(30px,5vw,40px)/1.1 var(--serif);letter-spacing:-.01em;margin:4px 0 0}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:28px}
+@media (max-width:640px){.grid{grid-template-columns:1fr}.wrap{padding:32px 16px 56px}}
+.card{display:flex;flex-direction:column;gap:6px;min-height:150px;padding:22px 22px 18px;background:var(--card);
+  border:1px solid var(--line);border-radius:14px;color:inherit;text-decoration:none;transition:border-color .15s,transform .15s}
+.card:hover{border-color:var(--accent);transform:translateY(-2px)}
+.card:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.card h2{font:600 21px/1.2 var(--serif);margin:0}
+.card p{margin:0;color:var(--ink2)}
+.card .meta{margin-top:auto;padding-top:14px;display:flex;justify-content:space-between;align-items:center;font-size:12.5px;color:var(--muted)}
+.card .go{color:var(--accent);font-weight:600}
+.tag{background:var(--accent-soft);color:var(--accent);border-radius:99px;padding:2px 9px;font-weight:600;font-size:11.5px}
+.card.off{opacity:.55;pointer-events:none}
+.card.off .tag{background:transparent;color:var(--muted);padding:0}
+.head .out{margin-left:auto;font:500 13px var(--sans);color:var(--ink2);background:none;border:1px solid var(--line);border-radius:8px;padding:7px 12px;cursor:pointer}
+.head .out:hover{border-color:var(--ink2);color:var(--ink)}
+.note{margin:18px 0 0;color:var(--ink2);font-size:13.5px}
+.signin{max-width:380px;margin:9vh auto 0;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:34px 32px}
+.signin img{height:34px;width:auto;background:#fff;padding:6px 10px;border-radius:6px;border:1px solid var(--line);margin-bottom:20px}
+.signin h1{font-size:28px;margin:0 0 6px}
+.signin p{margin:0 0 22px;color:var(--ink2)}
+.signin label{display:block;font-size:12.5px;font-weight:600;color:var(--ink2);margin:0 0 14px}
+.signin input{display:block;width:100%;margin-top:6px;padding:10px 12px;font:15px var(--sans);color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px}
+.signin input:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:var(--accent)}
+.signin button{width:100%;margin-top:6px;padding:11px;font:600 15px var(--sans);color:#fff;background:#1f5a43;border:0;border-radius:8px;cursor:pointer}
+.signin button:disabled{opacity:.6;cursor:default}
+.signin .err{min-height:20px;margin-top:12px;color:#b83232;font-size:13.5px}
+@media (prefers-color-scheme:dark){.signin .err{color:#ef7f7f}}
+[hidden]{display:none!important}
+@media (prefers-reduced-motion:reduce){.card{transition:none}.card:hover{transform:none}}
+</style>
+</head>
+<body>
+<script src="nav.js"></script>
+<!-- ============ sign in (one sign-in for every tool) ============ -->
+<div class="wrap" id="signin" hidden>
+  <form class="signin" id="form" autocomplete="on">
+    <img class="logo" alt="Armodilo Display Solutions">
+    <h1>Armodilo Tools</h1>
+    <p>Sign in once to open every tool.</p>
+    <label>Username<input id="user" name="username" autocomplete="username" autocapitalize="off" spellcheck="false" required></label>
+    <label>Password<input id="pass" name="password" type="password" autocomplete="current-password" required></label>
+    <button id="btn" type="submit">Sign in</button>
+    <div class="err" id="err" role="alert"></div>
+  </form>
+</div>
+
+<!-- ============ home ============ -->
+<div class="wrap" id="home" hidden>
+  <div class="head">
+    <img class="logo" alt="Armodilo Display Solutions">
+    <div>
+      <div class="eyebrow">Internal</div>
+      <h1>Armodilo Tools</h1>
+    </div>
+    <button class="out" id="out" type="button">Sign out</button>
+  </div>
+  <p class="note" id="note" role="status" hidden></p>
+  <div class="grid" id="grid"></div>
+</div>
+
+<script src="ci-builder/assets.js"></script>
+<script>
+/* Tools shown on the home page. `key` is the name the tool uses to remember its session and
+   `fields` are the names its Apps Script expects for the username and password.
+   Tools with no `key` need no sign-in. Keep this list in step with the one in nav.js. */
+var TOOLS = [
+  { dir: 'sales-revenue',      name: 'Sales Revenue',      key: 'armo_token', fields: ['user', 'pass'],
+    desc: 'The shareholder sales revenue dashboard.' },
+  { dir: 'monthly-summary',    name: 'Monthly Summary',    key: 'ms_token',   fields: ['username', 'password'],
+    desc: 'Pick a date range and get a month-by-month breakdown with a grand total.' },
+  { dir: 'product-allocation', name: 'Product Allocation', key: 'kt_token',   fields: ['username', 'password'],
+    desc: 'Components, open orders, urgent parts and all parts in one place.' },
+  { dir: 'ci-builder',         name: 'Invoice Builder',
+    desc: 'Turn a FedEx commercial invoice into the Armodilo version.' }
+];
+var GATED = TOOLS.filter(function (t) { return t.key; });
+var $ = function (id) { return document.getElementById(id); };
+var store = {
+  get: function (k) { try { return sessionStorage.getItem(k); } catch (e) { return null; } },
+  set: function (k, v) { try { sessionStorage.setItem(k, v); } catch (e) {} },
+  del: function (k) { try { sessionStorage.removeItem(k); } catch (e) {} }
+};
+if (window.LOGO_B64) Array.prototype.forEach.call(document.querySelectorAll('img.logo'), function (i) {
+  i.src = 'data:image/png;base64,' + window.LOGO_B64;
+});
+
+/* Each tool's Apps Script address is read from the tool's own page, so there is only one place to update it. */
+var urls = {};
+function apiUrl(t) {
+  if (!urls[t.dir]) urls[t.dir] = fetch(t.dir + '/index.html', { cache: 'no-store' })
+    .then(function (r) { return r.text(); })
+    .then(function (html) {
+      var m = /API_URL\s*=\s*['"]([^'"]+)['"]/.exec(html);
+      if (!m) throw new Error('no API_URL in ' + t.dir);
+      return m[1];
+    });
+  return urls[t.dir];
+}
+function api(t, body) {
+  return apiUrl(t).then(function (url) {
+    return fetch(url, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                        body: JSON.stringify(body), redirect: 'follow', cache: 'no-store', credentials: 'omit' });
+  }).then(function (r) { return r.json(); });
+}
+
+var next = new URLSearchParams(location.search).get('next');
+var nextTool = GATED.filter(function (t) { return t.dir === next; })[0] || null;
+function signedIn() { return GATED.some(function (t) { return store.get(t.key); }); }
+
+function signOut() {
+  GATED.forEach(function (t) {
+    var tok = store.get(t.key);
+    if (tok) api(t, { action: 'logout', token: tok }).catch(function () {});
+    store.del(t.key);
+  });
+  store.del('armo_signout'); store.del('armo_noaccess');
+}
+
+function showSignin(msg) {
+  $('home').hidden = true; $('signin').hidden = false;
+  $('err').textContent = msg || ''; $('pass').value = '';
+  ($('user').value ? $('pass') : $('user')).focus();
+}
+
+function showHome(note) {
+  $('signin').hidden = true; $('home').hidden = false;
+  $('note').hidden = !note; $('note').textContent = note || '';
+  var grid = $('grid'); grid.textContent = '';
+  TOOLS.forEach(function (t) {
+    var open = !t.key || !!store.get(t.key);
+    var a = document.createElement(open ? 'a' : 'div');
+    a.className = 'card' + (open ? '' : ' off');
+    if (open) a.href = t.dir + '/';
+    var h = document.createElement('h2'); h.textContent = t.name;
+    var p = document.createElement('p'); p.textContent = t.desc;
+    var meta = document.createElement('div'); meta.className = 'meta';
+    var left = document.createElement('span');
+    if (t.key) { left.className = 'tag'; left.textContent = open ? 'Signed in' : 'No access with this sign-in'; }
+    var go = document.createElement('span'); go.className = 'go'; go.textContent = open ? 'Open \u2192' : '';
+    meta.appendChild(left); meta.appendChild(go);
+    a.appendChild(h); a.appendChild(p); a.appendChild(meta);
+    grid.appendChild(a);
+  });
+}
+
+$('form').addEventListener('submit', function (e) {
+  e.preventDefault();
+  var btn = $('btn'), user = $('user').value, pass = $('pass').value;
+  btn.disabled = true; btn.textContent = 'Signing in\u2026'; $('err').textContent = '';
+  Promise.all(GATED.map(function (t) {
+    var body = { action: 'login' }; body[t.fields[0]] = user; body[t.fields[1]] = pass;
+    return api(t, body).then(function (r) {
+      if (r && r.ok && r.token) { store.set(t.key, r.token); return 'ok'; }
+      store.del(t.key);
+      return r && r.error === 'locked' ? 'locked' : 'no';
+    }, function () { return 'offline'; });
+  })).then(function (res) {
+    store.set('armo_noaccess', GATED.filter(function (t, i) { return res[i] === 'no' || res[i] === 'locked'; })
+                                    .map(function (t) { return t.dir; }).join(','));
+    btn.disabled = false; btn.textContent = 'Sign in';
+    var has = function (v) { return res.indexOf(v) !== -1; };
+    if (!has('ok')) {
+      showSignin(has('offline') && !has('no') && !has('locked') ? 'Could not reach the server. Check your connection and try again.'
+               : has('locked') ? 'Too many attempts. Please try again in 15 minutes.'
+               : 'That username or password is not right.');
+      return;
+    }
+    $('pass').value = '';
+    if (nextTool && store.get(nextTool.key)) { location.replace(nextTool.dir + '/'); return; }
+    history.replaceState(null, '', location.pathname);
+    showHome(nextTool ? noAccess(nextTool) : has('offline') ? 'One of the tools could not be reached just now. Sign out and back in to try again.' : '');
+  });
+});
+$('out').addEventListener('click', function () { signOut(); showSignin(''); });
+
+function noAccess(t) { return 'This sign-in does not have access to ' + t.name + '.'; }
+
+/* ---- start ---- */
+if (store.get('armo_signout')) { signOut(); showSignin(''); }
+else if (nextTool && !store.get(nextTool.key) && signedIn() && (store.get('armo_noaccess') || '').split(',').indexOf(nextTool.dir) !== -1) {
+  history.replaceState(null, '', location.pathname); showHome(noAccess(nextTool));
+}
+else if (nextTool && !store.get(nextTool.key)) showSignin(signedIn() ? 'Your session ended. Please sign in again.' : '');
+else if (signedIn()) showHome('');
+else showSignin('');
+</script>
+</body>
+</html>
