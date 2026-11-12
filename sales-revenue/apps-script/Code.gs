@@ -4,13 +4,11 @@
    Serves the Sales Revenue page on the Armodilo internal tools site:
    sign-in, invoice detail, and unbilled (open) orders.
 
-   SET-UP (once)
-   1. Project Settings (gear icon) > Script properties > Add script property
-        Property: SR_USERS
-        Value:    username:password
-      For several people, separate them with commas:  vishnu:pass1,james:pass2
-      Use the same username and password as the other tools so the single
-      sign-in on the home page opens everything.
+   The sign-in is set in LOGINS below. This file lives only in Apps Script
+   (it is not on GitHub), so only people who can edit this script can see it.
+
+   AFTER PASTING
+   1. Save (Ctrl+S).
    2. Deploy > Manage deployments > pencil icon > Version: New version > Deploy.
       Keep the same deployment so the page's web address does not change.
       "Execute as" = Me, "Who has access" = Anyone.
@@ -20,6 +18,11 @@ var SHEET_ID = '1YUZNRsEFKvILXj9nld7kuPwvMu7DbB0BMBKq61ErTtE';   // the Sales Re
 var DETAIL_TAB = 'Sales_Revenue by Invoice Detail';
 var UNBILLED_ORDERS_TAB = 'OS_Orders';
 var UNBILLED_DETAIL_TAB = 'OS_Orders Detail';
+
+/* Who can sign in: 'username:password'. Add more people with commas,
+   e.g. 'name1:password1,name2:password2'.
+   Use the same login as the other tools so the home page sign-in opens everything. */
+var LOGINS = '';   // filled in only in the Apps Script copy; never commit real passwords to GitHub
 
 var SESSION_HOURS = 6;        // how long a sign-in lasts (6 is the most Apps Script allows)
 var MAX_ATTEMPTS = 10;        // wrong passwords before a username is locked
@@ -33,7 +36,7 @@ function doPost(e) {
   catch (err) { return json_({ ok: false, error: 'bad_request' }); }
 
   try {
-    if (body.action === 'login') return json_(login_(body.user, body.pass));
+    if (body.action === 'login') return json_(login_(body.user || body.username, body.pass || body.password));
     if (body.action === 'logout') { if (body.token) cache_().remove('tok_' + body.token); return json_({ ok: true }); }
     if (!validToken_(body.token)) return json_({ ok: false, error: 'auth' });
     if (body.action === 'all') return json_(readAll_());
@@ -43,8 +46,10 @@ function doPost(e) {
   }
 }
 
+/* Open the web app address in a browser to check which version is live. */
 function doGet() {
-  return json_({ ok: true, service: 'Armodilo Sales Revenue' });
+  return json_({ ok: true, service: 'Armodilo Sales Revenue', version: '2026-11-12c',
+                 logins: loginList_().length });
 }
 
 /* ---------------- sign-in ---------------- */
@@ -52,7 +57,7 @@ function doGet() {
 function login_(user, pass) {
   user = String(user || '').trim().toLowerCase();
   pass = String(pass || '');
-  var c = cache_(), lockKey = 'lock_' + user, failKey = 'fail_' + user;
+  var c = cache_(), lockKey = 'lock2_' + user, failKey = 'fail2_' + user;
   if (c.get(lockKey)) return { ok: false, error: 'locked' };
 
   if (user && checkPassword_(user, pass)) {
@@ -72,15 +77,21 @@ function login_(user, pass) {
   return { ok: false, error: 'bad_login', left: MAX_ATTEMPTS - fails };
 }
 
-function checkPassword_(user, pass) {
-  var list = String(PropertiesService.getScriptProperties().getProperty('SR_USERS') || '');
-  var ok = false;
-  list.split(',').forEach(function (pair) {
+/* Logins come from LOGINS in this file and from the SR_USERS script property, if set. */
+function loginList_() {
+  var prop = PropertiesService.getScriptProperties().getProperty('SR_USERS') || '';
+  var out = [];
+  (LOGINS + ',' + prop).split(',').forEach(function (pair) {
     var i = pair.indexOf(':');
     if (i < 1) return;
-    var u = pair.slice(0, i).trim().toLowerCase(), p = pair.slice(i + 1).trim();
-    if (u === user && sameText_(p, pass)) ok = true;
+    out.push({ u: pair.slice(0, i).trim().toLowerCase(), p: pair.slice(i + 1).trim() });
   });
+  return out;
+}
+
+function checkPassword_(user, pass) {
+  var ok = false;
+  loginList_().forEach(function (x) { if (x.u === user && sameText_(x.p, pass)) ok = true; });
   return ok;
 }
 

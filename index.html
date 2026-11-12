@@ -142,7 +142,7 @@ function signOut() {
     if (tok) api(t, { action: 'logout', token: tok }).catch(function () {});
     store.del(t.key);
   });
-  store.del('armo_signout'); store.del('armo_noaccess');
+  store.del('armo_signout'); store.del('armo_noaccess'); store.del('armo_why');
 }
 
 function showSignin(msg) {
@@ -164,7 +164,14 @@ function showHome(note) {
     var p = document.createElement('p'); p.textContent = t.desc;
     var meta = document.createElement('div'); meta.className = 'meta';
     var left = document.createElement('span');
-    if (t.key) { left.className = 'tag'; left.textContent = open ? 'Signed in' : 'No access with this sign-in'; }
+    if (t.key) {
+      var why = {}; try { why = JSON.parse(store.get('armo_why') || '{}'); } catch (e) {}
+      left.className = 'tag';
+      left.textContent = open ? 'Signed in'
+        : why[t.dir] === 'offline' ? 'Could not reach this tool. Try signing in again.'
+        : why[t.dir] === 'locked' ? 'Locked after too many tries. Wait 15 minutes.'
+        : 'This username or password was not accepted here';
+    }
     var go = document.createElement('span'); go.className = 'go'; go.textContent = open ? 'Open \u2192' : '';
     meta.appendChild(left); meta.appendChild(go);
     a.appendChild(h); a.appendChild(p); a.appendChild(meta);
@@ -186,6 +193,8 @@ $('form').addEventListener('submit', function (e) {
   })).then(function (res) {
     store.set('armo_noaccess', GATED.filter(function (t, i) { return res[i] === 'no' || res[i] === 'locked'; })
                                     .map(function (t) { return t.dir; }).join(','));
+    var why = {}; GATED.forEach(function (t, i) { if (res[i] !== 'ok') why[t.dir] = res[i]; });
+    store.set('armo_why', JSON.stringify(why));
     btn.disabled = false; btn.textContent = 'Sign in';
     var has = function (v) { return res.indexOf(v) !== -1; };
     if (!has('ok')) {
