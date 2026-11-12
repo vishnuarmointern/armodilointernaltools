@@ -435,14 +435,27 @@ function prepare(payload) {
     var codeOf = {};
     customers.forEach(function (c) { codeOf[c.name.toLowerCase()] = c.code; });
     unbilled = { rows: [], cents: 0 };
+    var byNo = {};
     payload.unbilled.rows.forEach(function (r) {
       var d = String(r[1] || ''), dn = dnum(+d.slice(0, 4), +d.slice(5, 7), +d.slice(8, 10));
       var x = { o: String(r[0]), n: dn > 0 ? dn : 0, name: String(r[2] || ''), no: String(r[3] || ''),
                 ref: String(r[4] || ''), cur: String(r[5] || 'CAD'), rate: Number(r[6]) || 1,
-                a: Math.round((Number(r[7]) || 0) * 100) };
+                a: Math.round((Number(r[7]) || 0) * 100),
+                dep: r[8] === '' || r[8] == null ? null : Math.round((Number(r[8]) || 0) * 100),
+                hold: r[9] === true || String(r[9]).toUpperCase() === 'TRUE', lines: [] };
       x.code = codeOf[x.name.toLowerCase()] || 0;
       unbilled.rows.push(x); unbilled.cents += x.a;
+      byNo[x.o] = x;
     });
+    /* Part lines from the OS_Orders Detail tab:
+       [order no, part no, description, quantity, unit price CAD, discount %, line total CAD] */
+    (payload.unbilled.lines || []).forEach(function (l) {
+      var x = byNo[String(l[0])];
+      if (!x) return;
+      x.lines.push({ pn: String(l[1] || ''), desc: String(l[2] || ''), q: Number(l[3]) || 0,
+                     u: Number(l[4]) || 0, disc: Number(l[5]) || 0, a: Math.round((Number(l[6]) || 0) * 100) });
+    });
+    unbilled.hasLines = (payload.unbilled.lines || []).length > 0;
     unbilled.rows.sort(function (a, b) { return a.n - b.n || (a.o < b.o ? -1 : 1); });
   }
   return { parts: parts, customers: customers, rows: rows,
@@ -675,7 +688,7 @@ var store = {
   del: function (k) { try { sessionStorage.removeItem(k); } catch (e) {} }
 };
 var S = { token: store.get('armo_token'), model: null, from: 0, to: 0, R: null,
-          openM: {}, openP: {}, printing: false, generated: '', mode: 'part', addUnbilled: false };
+          openM: {}, openP: {}, printing: false, generated: '', mode: 'part', addUnbilled: false, openU: {} };
 
 function api(body) {
   return fetch(API_URL, {
@@ -888,21 +901,44 @@ function renderUnbilled() {
   }
   $('takeUnbilled').textContent = money0(U.cents) + ' is waiting in ' + count(n) + (n === 1 ? ' open order that has' : ' open orders that have') + ' not been invoiced yet.';
   $('ubSummary').textContent = 'Show the ' + count(n) + ' order' + (n === 1 ? '' : 's');
-  var h = '<table class="dt">' + heads(['Order Number', 'Order Date'].concat(show ? ['Customer', 'Customer Number'] : ['Customer'],
-    ['Reference', 'Currency', '>Subtotal (CAD)'])) + '<tbody>';
+  var hasDep = U.rows.some(function (x) { return x.dep !== null; });
+  var oh = ['Order Number', 'Order Date'].concat(show ? ['Customer', 'Customer Number'] : ['Customer'],
+    ['Reference', 'Currency'], hasDep ? ['>Deposits (CAD)'] : [], ['>Subtotal (CAD)']);
+  var lh = ['Part Number', 'Description', '>Quantity', '>Unit Price', '>Discount', '>Sales Price'];
+  var h = '<table class="dt">' + heads(oh) + '<tbody>';
   U.rows.forEach(function (x) {
-    h += '<tr>' + cell(esc(x.o)) + cell(x.n ? fmtDate(x.n) : '—') +
+    var can = x.lines.length > 0, open = can && !!S.openU[x.o];
+    h += '<tr' + (can ? ' class="click' + (open ? ' open' : '') + '" data-u="' + esc(x.o) + '"' : '') + '>' +
+      cell((can ? expBtn(open, esc(x.o)) : esc(x.o)) + (x.hold ? ' <span class="tag">On hold</span>' : '')) +
+      cell(x.n ? fmtDate(x.n) : '—') +
       (show ? cell(esc(x.name)) + cell(esc(x.no), 'mu') : cell(x.code ? 'Customer ' + x.code : 'New customer')) +
-      cell(esc(x.ref) || '—', 'mu') + cell(esc(curLabel(x)), 'mu') + cell(money(x.a), 'r') + '</tr>';
+      cell(esc(x.ref) || '—', 'mu') + cell(esc(curLabel(x)), 'mu') +
+      (hasDep ? cell(x.dep === null ? '—' : money(x.dep), 'r') : '') + cell(money(x.a), 'r') + '</tr>';
+    if (!open) return;
+    h += '<tr class="sub"><td class="nest" colspan="' + oh.length + '"><table class="dt">' + heads(lh) + '<tbody>';
+    x.lines.forEach(function (l) {
+      h += '<tr>' + cell(esc(l.pn)) + cell(esc(l.desc), 'desc') + cell(num(l.q), 'r') +
+        cell(money(Math.round(l.u * 100)), 'r') + cell(l.disc ? num(l.disc) + '%' : '—', 'r') + cell(money(l.a), 'r') + '</tr>';
+    });
+    h += '</tbody></table></td></tr>';
   });
+  var depTot = 0; U.rows.forEach(function (x) { depTot += x.dep || 0; });
   h += '</tbody><tfoot><tr>' + cell('Total unbilled') + cell('') + cell('') + (show ? cell('') : '') +
-    cell('') + cell('') + cell(money(U.cents), 'r') + '</tr></tfoot></table>';
+    cell('') + cell('') + (hasDep ? cell(money(depTot), 'r') : '') + cell(money(U.cents), 'r') + '</tr></tfoot></table>';
   $('ubTable').innerHTML = h;
-  var note = 'Product subtotal in CAD, before freight and tax, so it lines up with the revenue figures. ' +
+  var note = (U.hasLines ? 'Click an order to see its part lines. ' : '') +
+    'Subtotal is in CAD, before freight and tax, so it lines up with the revenue figures. ' +
     'This is the current list of open orders and does not change with the date range.';
   if (S.addUnbilled && !unbilledAdded()) note += ' Not added to total revenue: the selected range ends before the latest invoice.';
   $('ubNote').textContent = note;
 }
+$('ubTable').addEventListener('click', function (e) {
+  var tr = e.target.closest('tr[data-u]');
+  if (!tr) return;
+  var k = tr.getAttribute('data-u');
+  S.openU[k] = !S.openU[k];
+  renderUnbilled();
+});
 $('addUnbilled').addEventListener('change', function () {
   S.addUnbilled = this.checked;
   if (S.R) { renderTiles(); renderUnbilled(); }
