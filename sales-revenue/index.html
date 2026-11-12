@@ -461,6 +461,7 @@ function prepare(payload) {
                      u: Number(l[4]) || 0, disc: Number(l[5]) || 0, a: Math.round((Number(l[6]) || 0) * 100) });
     });
     unbilled.hasLines = (payload.unbilled.lines || []).length > 0;
+    unbilled.tabs = payload.unbilled.tabs || null;
     unbilled.rows.sort(function (a, b) { return a.n - b.n || (a.o < b.o ? -1 : 1); });
   }
   return { parts: parts, customers: customers, rows: rows,
@@ -936,6 +937,13 @@ function renderUnbilled() {
   var note = (U.hasLines ? 'Click an order number (›) to see the parts in it. ' : '') +
     'Subtotal is in CAD, before freight and tax, so it lines up with the revenue figures. ' +
     'This is the current list of open orders and does not change with the date range.';
+  if (!U.hasLines) {
+    var T = U.tabs;
+    note += T && !T.detail ? ' Part lines are not showing because the "OS_Orders Detail" tab was not found in the sheet.'
+          : T && !T.detailRows ? ' Part lines are not showing because the "OS_Orders Detail" tab is empty.'
+          : T ? ' Part lines are not showing: the "OS_Orders Detail" tab has rows, but none matched these order numbers.'
+          : ' Part lines are not showing because the Apps Script is an older version that does not send them.';
+  }
   if (S.addUnbilled && !unbilledAdded()) note += ' Not added to total revenue: the selected range ends before the latest invoice.';
   $('ubNote').textContent = note;
 }

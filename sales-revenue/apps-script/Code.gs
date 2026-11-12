@@ -48,7 +48,7 @@ function doPost(e) {
 
 /* Open the web app address in a browser to check which version is live. */
 function doGet() {
-  return json_({ ok: true, service: 'Armodilo Sales Revenue', version: '2026-11-12e',
+  return json_({ ok: true, service: 'Armodilo Sales Revenue', version: '2026-11-12f',
                  logins: loginList_().length });
 }
 
@@ -182,18 +182,30 @@ function readUnbilled_(ss, tz) {
                 number_(r.unit_cdn), number_(r.line_disc), number_(r.sales_price_cdn)]);
   });
 
-  return { rows: rows, lines: lines };
+  return { rows: rows, lines: lines,
+           tabs: { orders: !!findTab_(ss, UNBILLED_ORDERS_TAB), detail: !!findTab_(ss, UNBILLED_DETAIL_TAB),
+                   detailRows: detail.length } };
 }
 
 /* ---------------- helpers ---------------- */
 
-function readTab_(ss, name) {
+/* Finds a tab even if its name differs in capitals, spaces or underscores. */
+function findTab_(ss, name) {
   var sh = ss.getSheetByName(name);
+  if (sh) return sh;
+  var key = function (s) { return String(s).toLowerCase().replace(/[\s_]+/g, ''); };
+  var want = key(name), found = null;
+  ss.getSheets().forEach(function (t) { if (!found && key(t.getName()) === want) found = t; });
+  return found;
+}
+
+function readTab_(ss, name) {
+  var sh = findTab_(ss, name);
   if (!sh || sh.getLastRow() < 2) return [];
   var range = sh.getRange(1, 1, sh.getLastRow(), sh.getLastColumn());
   var values = range.getValues();
   var shown = range.getDisplayValues();   // dates are read exactly as the sheet shows them
-  var head = values[0].map(function (h) { return String(h).trim().toLowerCase(); });
+  var head = values[0].map(function (h) { return String(h).trim().toLowerCase().replace(/\s+/g, '_'); });
   return values.slice(1).map(function (row, r) {
     var o = {};
     head.forEach(function (h, i) {
