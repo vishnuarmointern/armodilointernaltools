@@ -153,6 +153,8 @@ tr.open>td>.exp>.chev{transform:rotate(90deg)}
 .desc{color:var(--ink2)}
 .empty{padding:28px 0;text-align:center;color:var(--muted)}
 .tag{display:inline-block;font-size:11px;padding:1px 8px;border-radius:999px;background:var(--accent-soft);color:var(--ink2);white-space:nowrap}
+details.ub summary{cursor:pointer;font-size:13px;font-weight:500;color:var(--accent);margin:0 0 4px;width:max-content;max-width:100%}
+details.ub[open] summary{margin-bottom:10px}
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:3px;background:var(--bg);flex-wrap:wrap}
 .seg button{border:0;background:transparent;padding:6px 14px;border-radius:999px;cursor:pointer;font-size:13px;font-weight:500;color:var(--ink2)}
 .seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
@@ -262,6 +264,16 @@ footer{margin-top:26px;font-size:12px;color:var(--muted)}
 
     <section class="tiles" id="tiles" aria-label="Headline numbers"></section>
     <p class="note" id="cmpnote"></p>
+
+    <section class="card" id="unbilledCard" hidden>
+      <div class="cardhead">
+        <div class="eyebrow">Unbilled orders</div>
+        <label class="toggle"><input type="checkbox" id="addUnbilled"> Add unbilled orders to total revenue</label>
+      </div>
+      <h2 class="take" id="takeUnbilled"></h2>
+      <details class="ub" id="ubDetails"><summary id="ubSummary"></summary><div class="scroll" id="ubTable"></div></details>
+      <p class="note" id="ubNote"></p>
+    </section>
 
     <section class="card">
       <div class="eyebrow">Revenue over time</div>
@@ -415,9 +427,27 @@ function prepare(payload) {
   customers.forEach(function (c, i) { c.cents = custAll[i] || 0; c.i = i; });
   customers.slice().sort(function (a, b) { return b.cents - a.cents || a.i - b.i; })
     .forEach(function (c, k) { c.code = k + 1; });
+  /* Unbilled (open) orders come from the OS_Orders tab: one row per order, no part lines.
+     Each row is [order no, order date, customer name, customer no, reference, currency, rate, subtotal in CAD].
+     Older versions of the Apps Script do not send them; the page then hides the section. */
+  var unbilled = null;
+  if (payload.unbilled && Array.isArray(payload.unbilled.rows)) {
+    var codeOf = {};
+    customers.forEach(function (c) { codeOf[c.name.toLowerCase()] = c.code; });
+    unbilled = { rows: [], cents: 0 };
+    payload.unbilled.rows.forEach(function (r) {
+      var d = String(r[1] || ''), dn = dnum(+d.slice(0, 4), +d.slice(5, 7), +d.slice(8, 10));
+      var x = { o: String(r[0]), n: dn > 0 ? dn : 0, name: String(r[2] || ''), no: String(r[3] || ''),
+                ref: String(r[4] || ''), cur: String(r[5] || 'CAD'), rate: Number(r[6]) || 1,
+                a: Math.round((Number(r[7]) || 0) * 100) };
+      x.code = codeOf[x.name.toLowerCase()] || 0;
+      unbilled.rows.push(x); unbilled.cents += x.a;
+    });
+    unbilled.rows.sort(function (a, b) { return a.n - b.n || (a.o < b.o ? -1 : 1); });
+  }
   return { parts: parts, customers: customers, rows: rows,
            minN: rows.length ? minN : 0, maxN: maxN, famSlot: famSlot,
-           labels: payload.labels || {} };
+           labels: payload.labels || {}, unbilled: unbilled };
 }
 
 /* Presets: From = 1st of the start month, To = last day of the end month. */
@@ -645,7 +675,7 @@ var store = {
   del: function (k) { try { sessionStorage.removeItem(k); } catch (e) {} }
 };
 var S = { token: store.get('armo_token'), model: null, from: 0, to: 0, R: null,
-          openM: {}, openP: {}, printing: false, generated: '', mode: 'part' };
+          openM: {}, openP: {}, printing: false, generated: '', mode: 'part', addUnbilled: false };
 
 function api(body) {
   return fetch(API_URL, {
@@ -798,12 +828,13 @@ window.addEventListener('scroll', hideTip, { passive: true });
 function render() {
   if (!S.model) return;
   S.R = compute(S.model, S.from, S.to);
-  renderTiles(); renderCharts(); renderTable();
+  renderTiles(); renderUnbilled(); renderCharts(); renderTable();
   var R = S.R;
   $('printhead').textContent = 'Period: ' + fmtDate(R.from) + ' to ' + fmtDate(R.to) + ' · All amounts in CAD';
   $('foot').textContent = 'Source: Sales Revenue sheet, invoice detail' +
     (S.generated ? ' · Data read ' + S.generated.replace('T', ' ') : '') +
-    ' · ' + S.model.rows.length.toLocaleString('en-CA') + ' invoice lines loaded';
+    ' · ' + S.model.rows.length.toLocaleString('en-CA') + ' invoice lines loaded' +
+    (S.model.unbilled ? ' · ' + S.model.unbilled.rows.length.toLocaleString('en-CA') + ' unbilled orders' : '');
   /* The charts and the table are built from the same rows; this guards it. */
   var t = buildDetail(R.rows, S.model, { mode: 'part' }).total.cents, m = 0, f = 0;
   R.months.forEach(function (x) { m += x.cur; });
@@ -816,7 +847,10 @@ function renderTiles() {
   var diff = R.total - R.prior, canCmp = R.canCompare;
   var chg = canCmp ? diff / R.prior : 0;
   var arrow = diff >= 0 ? '▲' : '▼', cls = diff >= 0 ? 'up' : 'down';
-  html += tile('Total revenue', money0(R.total), fmtDate(R.from) + ' to ' + fmtDate(R.to));
+  var U = S.model.unbilled, added = unbilledAdded();
+  html += added
+    ? tile('Revenue incl. unbilled orders', money0(R.total + U.cents), 'Invoiced ' + money0(R.total) + ' + unbilled ' + money0(U.cents))
+    : tile('Total revenue', money0(R.total), fmtDate(R.from) + ' to ' + fmtDate(R.to));
   html += canCmp
     ? tile('Change vs a year earlier', '<span class="' + cls + '">' + arrow + '</span> ' + pct(Math.abs(chg)),
            (diff >= 0 ? '+' : '−') + money0(Math.abs(diff)) + ' vs ' + money0(R.prior))
@@ -827,8 +861,52 @@ function renderTiles() {
   var note = '';
   if (R.canCompare) note = 'Year-earlier comparison covers ' + fmtDate(R.pFrom) + ' to ' + fmtDate(R.pTo) + '.';
   if (R.effTo !== R.to) note += ' The selected range runs past the latest invoice (' + fmtDate(R.effTo) + '), so the comparison stops on the matching day.';
+  if (added) note += ' Unbilled orders are added to the first figure only: the year-earlier change, order count, average order value, charts and detail table show invoiced sales.';
   $('cmpnote').textContent = note;
 }
+
+/* ---------- unbilled orders ---------- */
+/* Unbilled orders are a snapshot of today's open orders, so they are only added
+   to total revenue when the selected range reaches the latest invoice date. */
+function unbilledAdded() {
+  var U = S.model && S.model.unbilled;
+  return !!(U && U.rows.length && S.addUnbilled && S.R && S.R.to >= S.model.maxN);
+}
+function renderUnbilled() {
+  if (!S.model) return;
+  var U = S.model.unbilled, card = $('unbilledCard');
+  card.hidden = !U;
+  if (!U) return;
+  var n = U.rows.length, show = !$('hideNames').checked;
+  $('addUnbilled').checked = S.addUnbilled;
+  $('addUnbilled').disabled = !n;
+  $('ubDetails').hidden = !n;
+  if (!n) {
+    $('takeUnbilled').textContent = 'There are no unbilled orders right now.';
+    $('ubNote').textContent = '';
+    return;
+  }
+  $('takeUnbilled').textContent = money0(U.cents) + ' is waiting in ' + count(n) + (n === 1 ? ' open order that has' : ' open orders that have') + ' not been invoiced yet.';
+  $('ubSummary').textContent = 'Show the ' + count(n) + ' order' + (n === 1 ? '' : 's');
+  var h = '<table class="dt">' + heads(['Order Number', 'Order Date'].concat(show ? ['Customer', 'Customer Number'] : ['Customer'],
+    ['Reference', 'Currency', '>Subtotal (CAD)'])) + '<tbody>';
+  U.rows.forEach(function (x) {
+    h += '<tr>' + cell(esc(x.o)) + cell(x.n ? fmtDate(x.n) : '—') +
+      (show ? cell(esc(x.name)) + cell(esc(x.no), 'mu') : cell(x.code ? 'Customer ' + x.code : 'New customer')) +
+      cell(esc(x.ref) || '—', 'mu') + cell(esc(curLabel(x)), 'mu') + cell(money(x.a), 'r') + '</tr>';
+  });
+  h += '</tbody><tfoot><tr>' + cell('Total unbilled') + cell('') + cell('') + (show ? cell('') : '') +
+    cell('') + cell('') + cell(money(U.cents), 'r') + '</tr></tfoot></table>';
+  $('ubTable').innerHTML = h;
+  var note = 'Product subtotal in CAD, before freight and tax, so it lines up with the revenue figures. ' +
+    'This is the current list of open orders and does not change with the date range.';
+  if (S.addUnbilled && !unbilledAdded()) note += ' Not added to total revenue: the selected range ends before the latest invoice.';
+  $('ubNote').textContent = note;
+}
+$('addUnbilled').addEventListener('change', function () {
+  S.addUnbilled = this.checked;
+  if (S.R) { renderTiles(); renderUnbilled(); }
+});
 function tile(k, v, n) {
   return '<div class="tile"><div class="k">' + k + '</div><div class="v">' + v + '</div><div class="n">' + esc(n) + '</div></div>';
 }
@@ -1049,7 +1127,7 @@ function drawCust() {
 }
 function setHidden(v) {
   $('hideNames').checked = v; $('hideNames2').checked = v;
-  drawCust(); renderTable();
+  drawCust(); renderTable(); renderUnbilled();
 }
 $('hideNames').addEventListener('change', function () { setHidden(this.checked); });
 $('hideNames2').addEventListener('change', function () { setHidden(this.checked); });
