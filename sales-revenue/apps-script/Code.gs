@@ -48,7 +48,7 @@ function doPost(e) {
 
 /* Open the web app address in a browser to check which version is live. */
 function doGet() {
-  return json_({ ok: true, service: 'Armodilo Sales Revenue', version: '2026-11-12f',
+  return json_({ ok: true, service: 'Armodilo Sales Revenue', version: '2026-11-12g',
                  logins: loginList_().length });
 }
 
@@ -184,7 +184,8 @@ function readUnbilled_(ss, tz) {
 
   return { rows: rows, lines: lines,
            tabs: { orders: !!findTab_(ss, UNBILLED_ORDERS_TAB), detail: !!findTab_(ss, UNBILLED_DETAIL_TAB),
-                   detailRows: detail.length } };
+                   detailRows: detail.length,
+                   detailHeaders: detailHeaders_(ss) } };
 }
 
 /* ---------------- helpers ---------------- */
@@ -199,13 +200,26 @@ function findTab_(ss, name) {
   return found;
 }
 
+function detailHeaders_(ss) {
+  var sh = findTab_(ss, UNBILLED_DETAIL_TAB);
+  if (!sh) return [];
+  return sh.getRange(1, 1, 1, Math.min(sh.getLastColumn(), 20)).getDisplayValues()[0];
+}
+
 function readTab_(ss, name) {
   var sh = findTab_(ss, name);
   if (!sh || sh.getLastRow() < 2) return [];
   var range = sh.getRange(1, 1, sh.getLastRow(), sh.getLastColumn());
   var values = range.getValues();
   var shown = range.getDisplayValues();   // dates are read exactly as the sheet shows them
-  var head = values[0].map(function (h) { return String(h).trim().toLowerCase().replace(/\s+/g, '_'); });
+  /* Header names are matched loosely: "Order No", "order_no " and "ORDER-NO" all become order_no,
+     and invisible characters are ignored. */
+  var head = values[0].map(function (h) {
+    return String(h).toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+  });
+  if (head.indexOf('order_no') < 0 && head.indexOf('invoice_no') < 0 && head[0] !== undefined) {
+    head[0] = /invoice/.test(name.toLowerCase()) ? 'invoice_no' : 'order_no';   // order number is in column A
+  }
   return values.slice(1).map(function (row, r) {
     var o = {};
     head.forEach(function (h, i) {

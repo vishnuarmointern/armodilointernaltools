@@ -941,7 +941,8 @@ function renderUnbilled() {
     var T = U.tabs;
     note += T && !T.detail ? ' Part lines are not showing because the "OS_Orders Detail" tab was not found in the sheet.'
           : T && !T.detailRows ? ' Part lines are not showing because the "OS_Orders Detail" tab is empty.'
-          : T ? ' Part lines are not showing: the "OS_Orders Detail" tab has rows, but none matched these order numbers.'
+          : T ? ' Part lines are not showing: the "OS_Orders Detail" tab has rows, but none matched these order numbers.' +
+                (T.detailHeaders && T.detailHeaders.length ? ' Its column headings are: ' + T.detailHeaders.join(', ') + '.' : '')
           : ' Part lines are not showing because the Apps Script is an older version that does not send them.';
   }
   if (S.addUnbilled && !unbilledAdded()) note += ' Not added to total revenue: the selected range ends before the latest invoice.';
