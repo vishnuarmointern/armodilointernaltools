@@ -48,7 +48,7 @@ function doPost(e) {
 
 /* Open the web app address in a browser to check which version is live. */
 function doGet() {
-  return json_({ ok: true, service: 'Armodilo Sales Revenue', version: '2026-11-12c',
+  return json_({ ok: true, service: 'Armodilo Sales Revenue', version: '2026-11-12d',
                  logins: loginList_().length });
 }
 
@@ -115,7 +115,7 @@ function validToken_(token) {
    unbilled:  see readUnbilled_() */
 function readAll_() {
   var ss = SpreadsheetApp.openById(SHEET_ID);
-  var tz = ss.getSpreadsheetTimeZone();
+  var tz = timeZone_(ss);
   var detail = readTab_(ss, DETAIL_TAB);
   if (!detail.length) throw new Error('The "' + DETAIL_TAB + '" tab is missing or empty.');
 
@@ -218,6 +218,14 @@ function dateText_(v, tz) {
   if (v instanceof Date) return Utilities.formatDate(v, tz, 'yyyy-MM-dd');
   var s = String(v || '').trim();
   return /^\d{4}-\d{2}-\d{2}/.test(s) ? s.slice(0, 10) : '';
+}
+
+/* The sheet's time zone, falling back to the script's, then Toronto. */
+function timeZone_(ss) {
+  var tz = '';
+  try { tz = ss.getSpreadsheetTimeZone(); } catch (e) {}
+  if (!tz) { try { tz = Session.getScriptTimeZone(); } catch (e) {} }
+  return String(tz || 'America/Toronto');
 }
 
 function cache_() { return CacheService.getScriptCache(); }
