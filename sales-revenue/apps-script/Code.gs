@@ -48,7 +48,7 @@ function doPost(e) {
 
 /* Open the web app address in a browser to check which version is live. */
 function doGet() {
-  return json_({ ok: true, service: 'Armodilo Sales Revenue', version: '2026-11-12d',
+  return json_({ ok: true, service: 'Armodilo Sales Revenue', version: '2026-11-12e',
                  logins: loginList_().length });
 }
 
@@ -190,11 +190,16 @@ function readUnbilled_(ss, tz) {
 function readTab_(ss, name) {
   var sh = ss.getSheetByName(name);
   if (!sh || sh.getLastRow() < 2) return [];
-  var values = sh.getRange(1, 1, sh.getLastRow(), sh.getLastColumn()).getValues();
+  var range = sh.getRange(1, 1, sh.getLastRow(), sh.getLastColumn());
+  var values = range.getValues();
+  var shown = range.getDisplayValues();   // dates are read exactly as the sheet shows them
   var head = values[0].map(function (h) { return String(h).trim().toLowerCase(); });
-  return values.slice(1).map(function (row) {
+  return values.slice(1).map(function (row, r) {
     var o = {};
-    head.forEach(function (h, i) { if (h) o[h] = row[i]; });
+    head.forEach(function (h, i) {
+      if (!h) return;
+      o[h] = /date/.test(h) ? shown[r + 1][i] : row[i];
+    });
     return o;
   });
 }
@@ -214,10 +219,18 @@ function number_(v) {
   return isFinite(n) ? n : 0;
 }
 
+/* Dates arrive as the text the sheet shows. Handles 2026-04-22, 2026/04/22,
+   4/22/2026 and 22/04/2026 (day first when the first number is over 12). */
 function dateText_(v, tz) {
   if (v instanceof Date) return Utilities.formatDate(v, tz, 'yyyy-MM-dd');
-  var s = String(v || '').trim();
-  return /^\d{4}-\d{2}-\d{2}/.test(s) ? s.slice(0, 10) : '';
+  var s = String(v || '').trim(), m;
+  var pad = function (n) { return ('0' + n).slice(-2); };
+  if ((m = /^(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})/.exec(s))) return m[1] + '-' + pad(m[2]) + '-' + pad(m[3]);
+  if ((m = /^(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{4})/.exec(s))) {
+    var a = +m[1], b = +m[2];
+    return a > 12 ? m[3] + '-' + pad(b) + '-' + pad(a) : m[3] + '-' + pad(a) + '-' + pad(b);
+  }
+  return '';
 }
 
 /* The sheet's time zone, falling back to the script's, then Toronto. */
