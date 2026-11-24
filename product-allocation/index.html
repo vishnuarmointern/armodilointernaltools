@@ -1270,7 +1270,7 @@
             (fit ? '</div></div>' : '</summary><div class="kit-body">' + ordersBlock(c, k) + '</div></details>');
         }).join('');
         return '<details class="comp" data-key="' + esc(ck) + '"' + isOpen(ck, s) + '>' +
-          '<summary>' + CHEV + '<div style="min-width:0"><div class="t"><span class="lvl">Component</span>' + esc(c.part) + '</div>' +
+          '<summary>' + CHEV + '<div style="min-width:0"><div class="t"><span class="lvl">Part</span>' + esc(c.part) + '</div>' +
           (c.desc ? '<div class="d">' + esc(c.desc) + '</div>' : '') + '</div>' +
           covBlock(c.p, c.r, c.need, plural(c.kits.length, 'kit')) + '</summary>' +
           '<div class="comp-body">' + kits + '</div></details>';
@@ -1281,7 +1281,7 @@
         '<div class="pname"><div class="t">' + esc(cleanPn(p.part)) + (isFitKit(p.part) ? '<span class="tag">Fit kit</span>' : '') + '</div>' +
           (p.desc ? '<div class="d" title="' + esc(p.desc) + '">' + esc(p.desc) + '</div>' : '') + '</div>' +
         '<div class="pstat" title="This part across its orders, by status">' + statusMeter(n) + '<div class="counts">' + counts + '</div></div>' +
-        '<div class="pcov">' + covBlock(p.p, p.r, p.need, plural(p.comps.length, 'component')) + '</div>' +
+        '<div class="pcov">' + covBlock(p.p, p.r, p.need, plural(p.comps.length, 'part')) + '</div>' +
         '<div class="pact"><button type="button" class="vall" data-vall="' + esc(pk) + '" aria-pressed="' + vOn + '">' +
           (vOn ? 'Hide orders' : 'View all orders') + ' <span class="n">' + orders.length + '</span></button></div>' +
         '</summary><div class="part-body">' + partOrders(p.part, pk, orders) +
