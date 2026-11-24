@@ -1246,7 +1246,7 @@
         return comps.length ? Object.assign({}, p, { comps }) : null;
       }).filter(Boolean);
     }
-    $('count').innerHTML = '<span>' + plural(tree.length, 'part') + (s ? ' matching “' + esc(s) + '”' : '') + '</span>';
+    $('count').innerHTML = '<span>' + plural(tree.length, 'component') + (s ? ' matching “' + esc(s) + '”' : '') + '</span>';
     if (!tree.length) return '<div class="empty">' + (leaves.length ? 'No matches.' : 'No open requirements.') + '</div>';
 
     return tree.map(p => {
@@ -1285,7 +1285,7 @@
         '<div class="pact"><button type="button" class="vall" data-vall="' + esc(pk) + '" aria-pressed="' + vOn + '">' +
           (vOn ? 'Hide orders' : 'View all orders') + ' <span class="n">' + orders.length + '</span></button></div>' +
         '</summary><div class="part-body">' + partOrders(p.part, pk, orders) +
-        '<div class="section-label">Components</div>' + comps + '</div></details>';
+        '<div class="section-label">Parts</div>' + comps + '</div></details>';
     }).join('');
   }
 
