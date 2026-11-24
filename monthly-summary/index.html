@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="referrer" content="no-referrer">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src https://script.google.com https://script.googleusercontent.com; form-action 'none'; base-uri 'none'">
-<title>Monthly Summary</title>
+<title>Orders Recieved Summary</title>
 <script>try { var t = localStorage.getItem('ms_theme'); if (t === 'dark' || t === 'light') document.documentElement.setAttribute('data-theme', t); } catch (e) {}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -244,7 +244,7 @@
   <div class="login-form">
     <form id="loginForm" autocomplete="on">
       <h2>Sign in</h2>
-      <p class="sub">Monthly Summary</p>
+      <p class="sub">Orders Recieved Summary</p>
       <label class="f" for="u">Username</label>
       <input class="t" id="u" name="username" autocomplete="username" required>
       <label class="f" for="p">Password</label>
@@ -262,7 +262,7 @@
       <span class="mark" aria-hidden="true">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
       </span>
-      <div class="brand"><b>Monthly Summary</b><div class="sync" id="sync">Connecting…</div></div>
+      <div class="brand"><b>Orders Recieved Summary</b><div class="sync" id="sync">Connecting…</div></div>
       <div class="grow"></div>
       <button class="b icon" id="refreshBtn" type="button" title="Refresh data from the sheets" aria-label="Refresh data">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg></button>
@@ -344,7 +344,7 @@
     catch (e) {
       const m = text.match(/Script function not found: (\w+)/);
       throw new Error(m ? 'The Apps Script deployment is still running old code (no ' + m[1] + '). In Apps Script: Deploy → Manage deployments → edit → Version: New version → Deploy.'
-                        : 'The server replied with something other than the Monthly Summary script. Check the Apps Script deployment.');
+                        : 'The server replied with something other than the Orders Recieved Summary script. Check the Apps Script deployment.');
     }
     if (r && r.auth === false) { showLogin(r.error); throw new Error('auth'); }
     return r;
